@@ -89,9 +89,17 @@ namespace pso
             const Matrix &particles,
             Vector &fvals) const
         {
-            #pragma omp parallel num_threads(threads == 0 ? omp_get_max_threads() : threads_)
-            for(Index i = 0; i < particles.cols(); ++i)
-                fvals(i) = objective(particles.col(i));
+            if(threads_ == 1)
+            {
+                for(Index i = 0; i < particles.cols(); ++i)
+                    fvals(i) = objective(particles.col(i));
+            }
+            else
+            {
+                #pragma omp parallel num_threads(threads == 0 ? omp_get_max_threads() : threads_)
+                for(Index i = 0; i < particles.cols(); ++i)
+                    fvals(i) = objective(particles.col(i));
+            }
         }
 
         void maintainBounds(const Matrix &bounds, Matrix &particles) const
