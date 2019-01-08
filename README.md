@@ -2,8 +2,8 @@
 
 ![Cpp11](https://img.shields.io/badge/C%2B%2B-11-blue.svg)
 ![License](https://img.shields.io/packagist/l/doctrine/orm.svg)
-![Travis Status](https://travis-ci.org/Rookfighter/least-squares-cpp.svg?branch=master)
-![Appveyer Status](https://ci.appveyor.com/api/projects/status/y62egiabuk9ubie4?svg=true)
+![Travis Status](https://travis-ci.org/Rookfighter/pso-cpp.svg?branch=master)
+![Appveyer Status](https://ci.appveyor.com/api/projects/status/cl5iljq9bq6lcusu?svg=true)
 
 pso-cpp is a header-only C++ library for particle swarm optimization using
 the Eigen3 linear algebra library.
