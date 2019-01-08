@@ -294,6 +294,7 @@ namespace pso
             }
 
             Matrix currParticles = particles;
+            maintainBounds(bounds, currParticles);
 
             return _minimize(objective, bounds, currParticles);
         }
