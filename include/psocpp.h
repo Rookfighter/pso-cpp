@@ -13,7 +13,7 @@
 #include <limits>
 #include <functional>
 #include <iostream>
-#include <chrono>
+#include <ctime>
 #include <iomanip>
 
 namespace pso
@@ -50,7 +50,7 @@ namespace pso
 
         std::function<Scalar()> getDice() const
         {
-            std::default_random_engine gen(std::time(0));
+            std::mt19937 gen(std::time(0));
             std::uniform_real_distribution<Scalar> distrib(0.0, 1.0);
             return std::bind(distrib, gen);
         }
