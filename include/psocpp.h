@@ -299,6 +299,14 @@ namespace pso
             return _minimize(objective, bounds, currParticles);
         }
 
+        void getRandomParticles(const Matrix &bounds,
+            const size_t cnt,
+            Matrix &particles)
+        {
+            particles.resize(bounds.cols(), cnt);
+            randomizeParticles(bounds, particles);
+        }
+
     };
 }
 
