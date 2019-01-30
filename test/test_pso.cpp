@@ -5,6 +5,10 @@
  *      Author: Fabian Meyer
  */
 
+#ifdef _MSC_VER
+#include "stdafx.h"
+#endif
+
 #include "eigen_assert.h"
 #include <psocpp.h>
 
