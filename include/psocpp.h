@@ -65,16 +65,10 @@ namespace pso
 
         bool verbose_;
 
-        std::function<Scalar()> getDice() const
-        {
-            std::mt19937 gen(std::time(0));
-            std::uniform_real_distribution<Scalar> distrib(0.0, 1.0);
-            return std::bind(distrib, gen);
-        }
+        std::function<Scalar()> dice_;
 
-        void randomizeParticles(const Matrix &bounds, Matrix &particles) const
+        void randomizeParticles(const Matrix &bounds, Matrix &particles)
         {
-            auto dice = getDice();
             for(Index i = 0; i < particles.cols(); ++i)
             {
                 for(Index j = 0; j < particles.rows(); ++j)
@@ -82,14 +76,13 @@ namespace pso
                     Scalar min = bounds(0, j);
                     Scalar max = bounds(1, j);
                     Scalar diff = max - min;
-                    particles(j, i) = min + (dice() * diff);
+                    particles(j, i) = min + (dice_() * diff);
                 }
             }
         }
 
-        void randomizeVelocities(const Matrix &bounds, Matrix &velocities) const
+        void randomizeVelocities(const Matrix &bounds, Matrix &velocities)
         {
-            auto dice = getDice();
             for(Index i = 0; i < velocities.cols(); ++i)
             {
                 for(Index j = 0; j < velocities.rows(); ++j)
@@ -97,7 +90,7 @@ namespace pso
                     Scalar min = bounds(0, j);
                     Scalar max = bounds(1, j);
                     Scalar diff = max - min;
-                    velocities(j, i) = -diff + (dice() * 2 * diff);
+                    velocities(j, i) = -diff + (dice_() * 2 * diff);
                 }
             }
         }
@@ -125,45 +118,53 @@ namespace pso
             }
         }
 
-        void calculateVelocities(const Matrix &currParticles,
-            const Matrix &prevParticles,
-            const Index currBest,
-            Matrix &velocities) const
+        void calculateVelocities(const Matrix &particles,
+            const Matrix &bestParticles,
+            const Index gbest,
+            Matrix &velocities)
         {
-            assert(velocities.rows() == currParticles.rows());
-            assert(velocities.cols() == currParticles.cols());
-            assert(velocities.rows() == prevParticles.rows());
-            assert(velocities.cols() == prevParticles.cols());
-            assert(currBest < currParticles.cols());
+            assert(velocities.rows() == particles.rows());
+            assert(velocities.cols() == particles.cols());
+            assert(velocities.rows() == bestParticles.rows());
+            assert(velocities.cols() == bestParticles.cols());
+            assert(gbest < bestParticles.cols());
 
-            auto dice = getDice();
             for(Index i = 0; i < velocities.cols(); ++i)
             {
                 for(Index j = 0; j < velocities.rows(); ++j)
                 {
-                    Scalar velp = dice() * (prevParticles(j, i) - currParticles(j, i));
-                    Scalar velg = dice() * (currParticles(j, currBest) - currParticles(j, i));
+                    Scalar velp = dice_() * (bestParticles(j, i) - particles(j, i));
+                    Scalar velg = dice_() * (bestParticles(j, gbest) - particles(j, i));
                     velocities(j, i) = omega_ * velocities(j, i) + phip_ * velp + phig_ * velg;
                 }
             }
         }
 
         Result _minimize(const Matrix &bounds,
-            Matrix &currParticles)
+            Matrix &particles)
         {
-            Matrix prevParticles(currParticles.rows(), currParticles.cols());
-            Matrix velocities(currParticles.rows(), currParticles.cols());
-            Vector currFvals(currParticles.cols());
-            Vector prevFvals(currParticles.cols());
-            Index currBest = 0;
-            Index prevBest = 0;
+            Matrix velocities(particles.rows(), particles.cols());
+
+            Vector fvals(particles.cols());
+
+            Matrix bestParticles = particles;
+            Vector bestFvals(particles.cols());
+
+            Matrix prevParticles(particles.rows(), particles.cols());
+            Vector prevFvals(particles.cols());
+
+            Vector diff(particles.rows());
+
+            Index gbest = 0;
+            Index prevGbest = 0;
 
             // initialize velocities randomly
             randomizeVelocities(bounds, velocities);
 
             // evaluate objective function for the initial particles
-            evaluateObjective(currParticles, currFvals);
-            currFvals.minCoeff(&currBest);
+            evaluateObjective(particles, fvals);
+            bestFvals = fvals;
+            bestFvals.minCoeff(&gbest);
 
             // init stop conditions
             size_t iterations = 0;
@@ -172,36 +173,40 @@ namespace pso
 
             while(fdiff > feps_ && xdiff > xeps_ && (maxit_ == 0 || iterations < maxit_))
             {
-                prevParticles = currParticles;
-                prevFvals = currFvals;
-                prevBest = currBest;
+                // calculate new velocities
+                calculateVelocities(particles, bestParticles, gbest, velocities);
 
                 // move particles by velocity and stay within bounds
-                currParticles += velocities;
-                maintainBounds(bounds, currParticles);
+                particles += velocities;
+                maintainBounds(bounds, particles);
 
                 // evaluate objective for moved particles
-                evaluateObjective(currParticles, currFvals);
-                for(Index i = 0; i < currFvals.size(); ++i)
+                evaluateObjective(particles, fvals);
+
+                prevParticles = bestParticles;
+                prevFvals = bestFvals;
+                prevGbest = gbest;
+
+                for(Index i = 0; i < fvals.size(); ++i)
                 {
-                    // if there was no improvement revert to old value
-                    if(currFvals(i) >= prevFvals(i))
+                    // check if there was an improvement and update best vals
+                    if(fvals(i) < bestFvals(i))
                     {
-                        currFvals(i) = prevFvals(i);
-                        currParticles.col(i) = prevParticles.col(i);
+                        bestFvals(i) = fvals(i);
+                        bestParticles.col(i) = particles.col(i);
                     }
                 }
-                currFvals.minCoeff(&currBest);
+                bestFvals.minCoeff(&gbest);
 
-                // calculate new velocities
-                calculateVelocities(currParticles, prevParticles, currBest, velocities);
-
-                // check if there was any improvement
-                if(currFvals(currBest) < prevFvals(prevBest))
+                // calculate new diffs
+                xdiff = 0;
+                fdiff = 0;
+                for(Index i = 0; i < bestParticles.cols(); ++i)
                 {
-                    xdiff = (currParticles.col(currBest) -
-                        prevParticles.col(prevBest)).norm();
-                    fdiff = std::abs(currFvals(currBest) - prevFvals(prevBest));
+                    diff = bestParticles.col(i);
+                    diff -= prevParticles.col(i);
+                    xdiff += diff.norm();
+                    fdiff += std::abs(bestFvals(i) - prevFvals(i));
                 }
 
                 if(verbose_)
@@ -210,12 +215,12 @@ namespace pso
                         << std::fixed << std::showpoint << std::setprecision(6)
                         << "\tfdiff=" <<  fdiff
                         << "\txdiff=" << xdiff
-                        << "\tf=" << currFvals(currBest)
-                        << "\tx=" << currParticles.col(currBest).transpose()
+                        << "\tf=" << bestFvals(gbest)
+                        << "\tx=" << bestParticles.col(gbest).transpose()
                         << std::endl;
                 }
 
-                callback_(iterations, currParticles, currFvals, currBest);
+                callback_(iterations, bestParticles, bestFvals, gbest);
 
                 ++iterations;
             }
@@ -223,8 +228,8 @@ namespace pso
             Result result;
             result.iterations = iterations;
             result.converged = fdiff <= feps_ || xdiff <= xeps_;
-            result.fval = currFvals(currBest);
-            result.xval = currParticles.col(currBest);
+            result.fval = bestFvals(gbest);
+            result.xval = bestParticles.col(gbest);
 
             return result;
         }
@@ -232,9 +237,13 @@ namespace pso
     public:
 
         Optimizer()
-            : threads_(1), maxit_(0), xeps_(1e-6), feps_(1e-6), omega_(0.5),
-            phip_(0.5), phig_(0.5), verbose_(false)
+            : objective_(), callback_(), threads_(1), maxit_(0), xeps_(1e-6),
+            feps_(1e-6), omega_(0.45), phip_(0.9), phig_(0.9), verbose_(false),
+            dice_()
         {
+            std::mt19937 gen(std::time(0));
+            std::uniform_real_distribution<Scalar> distrib(0.0, 1.0);
+            dice_ = std::bind(distrib, gen);
         }
 
         void setThreads(const size_t threads)
@@ -298,10 +307,10 @@ namespace pso
                     throw std::runtime_error("bounds min is greater than max");
             }
 
-            Matrix currParticles(bounds.cols(), particleCnt);
-            randomizeParticles(bounds, currParticles);
+            Matrix particles(bounds.cols(), particleCnt);
+            randomizeParticles(bounds, particles);
 
-            return _minimize(bounds, currParticles);
+            return _minimize(bounds, particles);
         }
 
         Result minimize(const Matrix &bounds,
@@ -318,10 +327,10 @@ namespace pso
                     throw std::runtime_error("bounds min is greater than max");
             }
 
-            Matrix currParticles = particles;
-            maintainBounds(bounds, currParticles);
+            Matrix particles2 = particles;
+            maintainBounds(bounds, particles2);
 
-            return _minimize(bounds, currParticles);
+            return _minimize(bounds, particles2);
         }
 
         void getRandomParticles(const Matrix &bounds,
