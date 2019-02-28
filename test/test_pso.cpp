@@ -15,12 +15,11 @@
 template<typename Scalar>
 struct Paraboloid
 {
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-    typedef typename Matrix::Index Index;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
 
-    Scalar operator()(const Matrix &particles, const Index col) const
+    Scalar operator()(const Vector &state) const
     {
-        return particles.col(col).squaredNorm();
+        return state.squaredNorm();
     }
 };
 

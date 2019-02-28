@@ -107,7 +107,7 @@ namespace pso
         {
             #pragma omp parallel for num_threads(threads_)
             for(Index i = 0; i < particles.cols(); ++i)
-                fvals(i) = objective_(particles, i);
+                fvals(i) = objective_(particles.col(i));
         }
 
         void maintainBounds(const Matrix &bounds, Matrix &particles) const
