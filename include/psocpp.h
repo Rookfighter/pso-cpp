@@ -103,7 +103,7 @@ namespace pso
         }
 
         void evaluateObjective(const Matrix &particles,
-            Vector &fvals) const
+            Vector &fvals)
         {
             #pragma omp parallel for num_threads(threads_)
             for(Index i = 0; i < particles.cols(); ++i)
@@ -149,7 +149,7 @@ namespace pso
         }
 
         Result _minimize(const Matrix &bounds,
-            Matrix &currParticles) const
+            Matrix &currParticles)
         {
             Matrix prevParticles(currParticles.rows(), currParticles.cols());
             Matrix velocities(currParticles.rows(), currParticles.cols());
@@ -288,7 +288,7 @@ namespace pso
         }
 
         Result minimize(const Matrix &bounds,
-            const size_t particleCnt) const
+            const size_t particleCnt)
         {
             if(bounds.rows() != 2)
                 throw std::runtime_error("bounds has not exactly 2 rows (min, max)");
@@ -305,7 +305,7 @@ namespace pso
         }
 
         Result minimize(const Matrix &bounds,
-            const Matrix &particles) const
+            const Matrix &particles)
         {
             if(bounds.rows() != 2)
                 throw std::runtime_error("bounds has not exactly 2 rows (min, max)");
