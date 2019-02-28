@@ -19,12 +19,26 @@
 namespace pso
 {
     template<typename Scalar>
+    struct NoCallback
+    {
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+        typedef typename Matrix::Index Index;
+
+        void operator()(const size_t, const Matrix&, const Vector &, const Index) const
+        {
+
+        }
+    };
+
+    template<typename Scalar,
+        typename Objective,
+        typename Callback = NoCallback<Scalar> >
     class Optimizer
     {
     public:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-        typedef std::function<Scalar(const Vector &)> Objective;
         typedef typename Matrix::Index Index;
 
         struct Result
@@ -36,6 +50,9 @@ namespace pso
         };
 
     private:
+        Objective objective_;
+        Callback callback_;
+
         size_t threads_;
 
         size_t maxit_;
@@ -85,13 +102,12 @@ namespace pso
             }
         }
 
-        void evaluateObjective(const Objective &objective,
-            const Matrix &particles,
+        void evaluateObjective(const Matrix &particles,
             Vector &fvals) const
         {
             #pragma omp parallel for num_threads(threads_)
             for(Index i = 0; i < particles.cols(); ++i)
-                fvals(i) = objective(particles.col(i));
+                fvals(i) = objective_(particles, i);
         }
 
         void maintainBounds(const Matrix &bounds, Matrix &particles) const
@@ -132,8 +148,7 @@ namespace pso
             }
         }
 
-        Result _minimize(const Objective &objective,
-            const Matrix &bounds,
+        Result _minimize(const Matrix &bounds,
             Matrix &currParticles) const
         {
             Matrix prevParticles(currParticles.rows(), currParticles.cols());
@@ -147,15 +162,15 @@ namespace pso
             randomizeVelocities(bounds, velocities);
 
             // evaluate objective function for the initial particles
-            evaluateObjective(objective, currParticles, currFvals);
+            evaluateObjective(currParticles, currFvals);
             currFvals.minCoeff(&currBest);
 
             // init stop conditions
-            size_t it = 0;
+            size_t iterations = 0;
             Scalar fdiff = std::numeric_limits<Scalar>::infinity();
             Scalar xdiff = std::numeric_limits<Scalar>::infinity();
 
-            while(fdiff > feps_ && xdiff > xeps_ && (maxit_ == 0 || it < maxit_))
+            while(fdiff > feps_ && xdiff > xeps_ && (maxit_ == 0 || iterations < maxit_))
             {
                 prevParticles = currParticles;
                 prevFvals = currFvals;
@@ -166,7 +181,7 @@ namespace pso
                 maintainBounds(bounds, currParticles);
 
                 // evaluate objective for moved particles
-                evaluateObjective(objective, currParticles, currFvals);
+                evaluateObjective(currParticles, currFvals);
                 for(Index i = 0; i < currFvals.size(); ++i)
                 {
                     // if there was no improvement revert to old value
@@ -191,7 +206,7 @@ namespace pso
 
                 if(verbose_)
                 {
-                    std::cout << "it=" << it
+                    std::cout << "it=" << iterations
                         << std::fixed << std::showpoint << std::setprecision(6)
                         << "\tfdiff=" <<  fdiff
                         << "\txdiff=" << xdiff
@@ -200,11 +215,13 @@ namespace pso
                         << std::endl;
                 }
 
-                ++it;
+                callback_(iterations, currParticles, currFvals, currBest);
+
+                ++iterations;
             }
 
             Result result;
-            result.iterations = it;
+            result.iterations = iterations;
             result.converged = fdiff <= feps_ || xdiff <= xeps_;
             result.fval = currFvals(currBest);
             result.xval = currParticles.col(currBest);
@@ -260,8 +277,17 @@ namespace pso
             verbose_ = verbose;
         }
 
-        Result minimize(const Objective &objective,
-            const Matrix &bounds,
+        void setObjective(const Objective &objective)
+        {
+            objective_ = objective;
+        }
+
+        void setCallback(const Callback &callback)
+        {
+            callback_ = callback;
+        }
+
+        Result minimize(const Matrix &bounds,
             const size_t particleCnt) const
         {
             if(bounds.rows() != 2)
@@ -275,11 +301,10 @@ namespace pso
             Matrix currParticles(bounds.cols(), particleCnt);
             randomizeParticles(bounds, currParticles);
 
-            return _minimize(objective, bounds, currParticles);
+            return _minimize(bounds, currParticles);
         }
 
-        Result minimize(const Objective &objective,
-            const Matrix &bounds,
+        Result minimize(const Matrix &bounds,
             const Matrix &particles) const
         {
             if(bounds.rows() != 2)
@@ -296,7 +321,7 @@ namespace pso
             Matrix currParticles = particles;
             maintainBounds(bounds, currParticles);
 
-            return _minimize(objective, bounds, currParticles);
+            return _minimize(bounds, currParticles);
         }
 
         void getRandomParticles(const Matrix &bounds,
