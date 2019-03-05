@@ -314,7 +314,7 @@ namespace pso
         }
 
         Result minimize(const Matrix &bounds,
-            const Matrix &particles)
+            Matrix &particles)
         {
             if(bounds.rows() != 2)
                 throw std::runtime_error("bounds has not exactly 2 rows (min, max)");
@@ -327,10 +327,9 @@ namespace pso
                     throw std::runtime_error("bounds min is greater than max");
             }
 
-            Matrix particles2 = particles;
-            maintainBounds(bounds, particles2);
+            maintainBounds(bounds, particles);
 
-            return _minimize(bounds, particles2);
+            return _minimize(bounds, particles);
         }
 
         void getRandomParticles(const Matrix &bounds,
