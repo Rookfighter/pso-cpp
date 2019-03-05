@@ -299,6 +299,8 @@ namespace pso
         Result minimize(const Matrix &bounds,
             const size_t particleCnt)
         {
+            if(particleCnt == 0)
+                throw std::runtime_error("particle count cannot be 0");
             if(bounds.rows() != 2)
                 throw std::runtime_error("bounds has not exactly 2 rows (min, max)");
             for(Index i = 0; i < bounds.cols(); ++i)
@@ -309,6 +311,29 @@ namespace pso
 
             Matrix particles(bounds.cols(), particleCnt);
             randomizeParticles(bounds, particles);
+
+            return _minimize(bounds, particles);
+        }
+
+        Result minimize(const Matrix &bounds,
+            const size_t particleCnt,
+            const Vector &initGuess)
+        {
+            if(particleCnt == 0)
+                throw std::runtime_error("particle count cannot be 0");
+            if(bounds.rows() != 2)
+                throw std::runtime_error("bounds has not exactly 2 rows (min, max)");
+            for(Index i = 0; i < bounds.cols(); ++i)
+            {
+                if(bounds(0, i) >= bounds(1, i))
+                throw std::runtime_error("bounds min is greater than max");
+            }
+            if(bounds.cols() != initGuess.size())
+                throw std::runtime_error("init guess and bounds have different dimensions");
+
+            Matrix particles(bounds.cols(), particleCnt);
+            randomizeParticles(bounds, particles);
+            particles.col(0) = initGuess;
 
             return _minimize(bounds, particles);
         }
