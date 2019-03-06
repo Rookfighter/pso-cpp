@@ -15,6 +15,7 @@
 #include <iostream>
 #include <ctime>
 #include <iomanip>
+#include <random>
 
 namespace pso
 {
