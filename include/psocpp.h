@@ -73,9 +73,9 @@ namespace pso
             {
                 for(Index j = 0; j < particles.rows(); ++j)
                 {
-                    Scalar min = bounds(0, j);
-                    Scalar max = bounds(1, j);
-                    Scalar diff = max - min;
+                    Scalar minval = bounds(0, j);
+                    Scalar maxval = bounds(1, j);
+                    Scalar diff = maxval - minval;
                     particles(j, i) = min + (dice_() * diff);
                 }
             }
@@ -87,9 +87,9 @@ namespace pso
             {
                 for(Index j = 0; j < velocities.rows(); ++j)
                 {
-                    Scalar min = bounds(0, j);
-                    Scalar max = bounds(1, j);
-                    Scalar diff = max - min;
+                    Scalar minval = bounds(0, j);
+                    Scalar maxval = bounds(1, j);
+                    Scalar diff = maxval - minval;
                     velocities(j, i) = -diff + (dice_() * 2 * diff);
                 }
             }
@@ -109,11 +109,11 @@ namespace pso
             {
                 for(Index j = 0; j < particles.rows(); ++j)
                 {
-                    Scalar min = bounds(0, j);
-                    Scalar max = bounds(1, j);
+                    Scalar minval = bounds(0, j);
+                    Scalar maxval = bounds(1, j);
                     Scalar val = particles(j, i);
-                    particles(j, i) = val < min ? min : val;
-                    particles(j, i) = val > max ? max : val;
+                    particles(j, i) = val < minval ? minval : val;
+                    particles(j, i) = val > maxval ? maxval : val;
                 }
             }
         }
