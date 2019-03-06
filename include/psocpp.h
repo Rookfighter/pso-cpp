@@ -334,6 +334,7 @@ namespace pso
             Matrix particles(bounds.cols(), particleCnt);
             randomizeParticles(bounds, particles);
             particles.col(0) = initGuess;
+            maintainBounds(bounds, particles);
 
             return _minimize(bounds, particles);
         }
