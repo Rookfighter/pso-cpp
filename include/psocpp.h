@@ -112,8 +112,7 @@ namespace pso
                     Scalar minval = bounds(0, j);
                     Scalar maxval = bounds(1, j);
                     Scalar val = particles(j, i);
-                    particles(j, i) = val < minval ? minval : val;
-                    particles(j, i) = val > maxval ? maxval : val;
+                    particles(j, i) = std::min(maxval, std::max(minval, val));
                 }
             }
         }
@@ -241,7 +240,7 @@ namespace pso
             feps_(1e-6), omega_(0.45), phip_(0.9), phig_(0.9), verbose_(false),
             dice_()
         {
-            std::mt19937 gen(std::time(0));
+            std::default_random_engine gen(std::time(0));
             std::uniform_real_distribution<Scalar> distrib(0.0, 1.0);
             dice_ = std::bind(distrib, gen);
         }

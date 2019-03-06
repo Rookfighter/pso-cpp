@@ -17,15 +17,33 @@ struct Paraboloid
 {
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
 
+    Vector offset;
+
+    Paraboloid()
+        : offset()
+    { }
+
+    Paraboloid(const Vector &offset)
+        : offset(offset)
+    { }
+
     Scalar operator()(const Vector &state) const
     {
-        return state.squaredNorm();
+        assert(offset.size() == state.size());
+        return (state + offset).squaredNorm();
     }
 };
 
+typedef double Scalar;
+typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+
 TEST_CASE("Particle Swarm Optimization")
 {
-    pso::Optimizer<double, Paraboloid<double> > opt;
+    pso::Optimizer<Scalar, Paraboloid<Scalar> > opt;
+    Paraboloid<Scalar> parab;
+    parab.offset.setZero(3);
+    opt.setObjective(parab);
+
     opt.setMaxIterations(100);
 
     SECTION("with paraboloid")
@@ -56,5 +74,59 @@ TEST_CASE("Particle Swarm Optimization")
             5, 5, 5;
 
         REQUIRE_THROWS(opt.minimize(bounds, 200));
+    }
+
+    SECTION("in negative bounds")
+    {
+        parab.offset << 2, 2, 2;
+        opt.setObjective(parab);
+
+        Eigen::MatrixXd bounds(2, 3);
+        bounds <<
+            -1, -1, -1,
+             1,  1,  1;
+
+        auto result = opt.minimize(bounds, 200);
+
+        Vector stateExp(3);
+        stateExp << -1, -1, -1;
+
+        REQUIRE_MAT(result.xval, stateExp, 1e-6);
+    }
+
+    SECTION("in positive bounds")
+    {
+        parab.offset << -2, -2, -2;
+        opt.setObjective(parab);
+
+        Eigen::MatrixXd bounds(2, 3);
+        bounds <<
+            -1, -1, -1,
+             1,  1,  1;
+
+        auto result = opt.minimize(bounds, 200);
+
+        Vector stateExp(3);
+        stateExp << 1, 1, 1;
+
+        REQUIRE_MAT(result.xval, stateExp, 1e-6);
+    }
+
+    SECTION("in mixed bounds")
+    {
+        parab.offset << 2, -2, 2;
+        opt.setObjective(parab);
+
+        Eigen::MatrixXd bounds(2, 3);
+        bounds <<
+            -1, -1, -1,
+             1,  1,  1;
+
+        auto result = opt.minimize(bounds, 200);
+
+        Vector stateExp(3);
+        stateExp << -1, 1, -1;
+
+        REQUIRE_MAT(result.xval, stateExp, 1e-6);
     }
 }
