@@ -76,7 +76,7 @@ namespace pso
                     Scalar minval = bounds(0, j);
                     Scalar maxval = bounds(1, j);
                     Scalar diff = maxval - minval;
-                    particles(j, i) = min + (dice_() * diff);
+                    particles(j, i) = minval + (dice_() * diff);
                 }
             }
         }
