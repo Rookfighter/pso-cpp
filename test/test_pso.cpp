@@ -23,7 +23,8 @@ struct Paraboloid
         : offset(offset)
     { }
 
-    Scalar operator()(const Vector &state) const
+    template<typename Derived>
+    Scalar operator()(const Eigen::MatrixBase<Derived> &state) const
     {
         assert(offset.size() == state.size());
         return (state + offset).squaredNorm();
