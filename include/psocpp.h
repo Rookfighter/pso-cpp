@@ -208,6 +208,8 @@ namespace pso
                     xdiff += diff.norm();
                     fdiff += std::abs(bestFvals(i) - prevFvals(i));
                 }
+                xdiff /= bestParticles.cols();
+                fdiff /= bestParticles.cols();
 
                 if(verbose_)
                 {
