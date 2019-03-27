@@ -36,97 +36,161 @@ typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
 
 TEST_CASE("Particle Swarm Optimization")
 {
-    pso::Optimizer<Scalar, Paraboloid<Scalar> > opt;
-    Paraboloid<Scalar> parab;
-    parab.offset.setZero(3);
-    opt.setObjective(parab);
-    opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
-    opt.setPhiParticles(0.9);
-    opt.setPhiGlobal(0.9);
-
-    opt.setMaxIterations(100);
-
-    SECTION("with paraboloid")
+    SECTION("optimize paraboloid")
     {
-        Eigen::MatrixXd bounds(2, 3);
-        bounds << -5, -5, -5, 5, 5, 5;
+        Paraboloid<Scalar> parab;
+        parab.offset.setZero(3);
 
-        opt.setEpsilonX(1e-8);
-        opt.setEpsilonF(1e-10);
+        SECTION("with constant weight")
+        {
+            Eigen::MatrixXd bounds(2, 3);
+            bounds << -5, -5, -5, 5, 5, 5;
 
-        auto result = opt.minimize(bounds, 200);
-        REQUIRE(result.converged);
-        REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
-        REQUIRE_MAT(Eigen::VectorXd::Zero(3), result.xval, 1e-3);
-    }
+            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::ConstantWeight<Scalar>> opt;
+            opt.setObjective(parab);
+            opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
+            opt.setPhiParticles(0.9);
+            opt.setPhiGlobal(0.9);
+            opt.setMaxIterations(100);
 
-    SECTION("with wrong bounds")
-    {
-        Eigen::MatrixXd bounds(3, 3);
-        bounds << -5, -5, -5,
-            5, 5, 5,
-            6, 6, 6;
+            auto result = opt.minimize(bounds, 200);
+            REQUIRE(result.converged);
+            REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
+            REQUIRE_MAT(Eigen::VectorXd::Zero(3), result.xval, 1e-3);
+        }
 
-        REQUIRE_THROWS(opt.minimize(bounds, 200));
+        SECTION("with natural exponent weight 1")
+        {
+            Eigen::MatrixXd bounds(2, 3);
+            bounds << -5, -5, -5, 5, 5, 5;
 
-        bounds.resize(2, 3);
-        bounds << -5, -5, 6,
-            5, 5, 5;
+            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::NaturalExponentWeight1<Scalar>> opt;
+            opt.setObjective(parab);
+            opt.setInertiaWeightStrategy(pso::NaturalExponentWeight1<Scalar>(0.4, 0.9));
+            opt.setPhiParticles(2.0);
+            opt.setPhiGlobal(2.0);
+            opt.setMaxIterations(100);
 
-        REQUIRE_THROWS(opt.minimize(bounds, 200));
-    }
+            auto result = opt.minimize(bounds, 200);
+            REQUIRE(result.converged);
+            REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
+            REQUIRE_MAT(Eigen::VectorXd::Zero(3), result.xval, 1e-3);
+        }
 
-    SECTION("in negative bounds")
-    {
-        parab.offset << 2, 2, 2;
-        opt.setObjective(parab);
+        SECTION("with natural exponent weight 2")
+        {
+            Eigen::MatrixXd bounds(2, 3);
+            bounds << -5, -5, -5, 5, 5, 5;
 
-        Eigen::MatrixXd bounds(2, 3);
-        bounds <<
-            -1, -1, -1,
-             1,  1,  1;
+            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::NaturalExponentWeight2<Scalar>> opt;
+            opt.setObjective(parab);
+            opt.setInertiaWeightStrategy(pso::NaturalExponentWeight2<Scalar>(0.4, 0.9));
+            opt.setPhiParticles(2.0);
+            opt.setPhiGlobal(2.0);
+            opt.setMaxIterations(100);
 
-        auto result = opt.minimize(bounds, 200);
+            auto result = opt.minimize(bounds, 200);
+            REQUIRE(result.converged);
+            REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
+            REQUIRE_MAT(Eigen::VectorXd::Zero(3), result.xval, 1e-3);
+        }
 
-        Vector stateExp(3);
-        stateExp << -1, -1, -1;
+        SECTION("with wrong bounds")
+        {
+            pso::Optimizer<Scalar, Paraboloid<Scalar>> opt;
+            opt.setObjective(parab);
+            opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
+            opt.setPhiParticles(0.9);
+            opt.setPhiGlobal(0.9);
+            opt.setMaxIterations(100);
 
-        REQUIRE_MAT(result.xval, stateExp, 1e-6);
-    }
+            Eigen::MatrixXd bounds(3, 3);
+            bounds << -5, -5, -5,
+                5, 5, 5,
+                6, 6, 6;
 
-    SECTION("in positive bounds")
-    {
-        parab.offset << -2, -2, -2;
-        opt.setObjective(parab);
+            REQUIRE_THROWS(opt.minimize(bounds, 200));
 
-        Eigen::MatrixXd bounds(2, 3);
-        bounds <<
-            -1, -1, -1,
-             1,  1,  1;
+            bounds.resize(2, 3);
+            bounds << -5, -5, 6,
+                5, 5, 5;
 
-        auto result = opt.minimize(bounds, 200);
+            REQUIRE_THROWS(opt.minimize(bounds, 200));
+        }
 
-        Vector stateExp(3);
-        stateExp << 1, 1, 1;
+        SECTION("in negative bounds")
+        {
+            pso::Optimizer<Scalar, Paraboloid<Scalar>> opt;
+            opt.setObjective(parab);
+            opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
+            opt.setPhiParticles(0.9);
+            opt.setPhiGlobal(0.9);
+            opt.setMaxIterations(100);
 
-        REQUIRE_MAT(result.xval, stateExp, 1e-6);
-    }
+            parab.offset << 2, 2, 2;
+            opt.setObjective(parab);
 
-    SECTION("in mixed bounds")
-    {
-        parab.offset << 2, -2, 2;
-        opt.setObjective(parab);
+            Eigen::MatrixXd bounds(2, 3);
+            bounds <<
+                -1, -1, -1,
+                 1,  1,  1;
 
-        Eigen::MatrixXd bounds(2, 3);
-        bounds <<
-            -1, -1, -1,
-             1,  1,  1;
+            auto result = opt.minimize(bounds, 200);
 
-        auto result = opt.minimize(bounds, 200);
+            Vector stateExp(3);
+            stateExp << -1, -1, -1;
 
-        Vector stateExp(3);
-        stateExp << -1, 1, -1;
+            REQUIRE_MAT(result.xval, stateExp, 1e-6);
+        }
 
-        REQUIRE_MAT(result.xval, stateExp, 1e-6);
+        SECTION("in positive bounds")
+        {
+            pso::Optimizer<Scalar, Paraboloid<Scalar>> opt;
+            opt.setObjective(parab);
+            opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
+            opt.setPhiParticles(0.9);
+            opt.setPhiGlobal(0.9);
+            opt.setMaxIterations(100);
+
+            parab.offset << -2, -2, -2;
+            opt.setObjective(parab);
+
+            Eigen::MatrixXd bounds(2, 3);
+            bounds <<
+                -1, -1, -1,
+                 1,  1,  1;
+
+            auto result = opt.minimize(bounds, 200);
+
+            Vector stateExp(3);
+            stateExp << 1, 1, 1;
+
+            REQUIRE_MAT(result.xval, stateExp, 1e-6);
+        }
+
+        SECTION("in mixed bounds")
+        {
+            pso::Optimizer<Scalar, Paraboloid<Scalar>> opt;
+            opt.setObjective(parab);
+            opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
+            opt.setPhiParticles(0.9);
+            opt.setPhiGlobal(0.9);
+            opt.setMaxIterations(100);
+
+            parab.offset << 2, -2, 2;
+            opt.setObjective(parab);
+
+            Eigen::MatrixXd bounds(2, 3);
+            bounds <<
+                -1, -1, -1,
+                 1,  1,  1;
+
+            auto result = opt.minimize(bounds, 200);
+
+            Vector stateExp(3);
+            stateExp << -1, 1, -1;
+
+            REQUIRE_MAT(result.xval, stateExp, 1e-6);
+        }
     }
 }
