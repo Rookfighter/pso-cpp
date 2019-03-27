@@ -287,17 +287,11 @@ namespace pso
                 bestFvals.minCoeff(&gbest);
 
                 // calculate new diffs
-                xdiff = 0;
-                fdiff = 0;
-                for(Index i = 0; i < bestParticles.cols(); ++i)
-                {
-                    diff = bestParticles.col(i);
-                    diff -= prevParticles.col(i);
-                    xdiff += diff.norm();
-                    fdiff += std::abs(bestFvals(i) - prevFvals(i));
-                }
+                xdiff = (bestParticles - prevParticles).colwise().norm().sum();
+                fdiff = (bestFvals - prevFvals).array().abs().sum();
+
                 xdiff /= bestParticles.cols();
-                fdiff /= bestParticles.cols();
+                fdiff /= bestFvals.size();
 
                 if(verbose_)
                 {
