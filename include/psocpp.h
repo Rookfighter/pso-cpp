@@ -77,8 +77,8 @@ namespace pso
         Scalar operator()(const size_t iteration,
             const size_t maxIt) const
         {
-            Scalar exponent = - static_cast<Scalar>(iteration) / (static_cast<Scalar>(maxIt) / 10.0);
-            return weightMin + (weightMax - weightMin) * std::exp(exponent);
+            Scalar exponent = static_cast<Scalar>(iteration) / (static_cast<Scalar>(maxIt) / 10.0);
+            return weightMin + (weightMax - weightMin) * std::exp(-exponent);
         }
     };
 
@@ -104,15 +104,15 @@ namespace pso
             const size_t maxIt) const
         {
             Scalar exponent = static_cast<Scalar>(iteration) / (static_cast<Scalar>(maxIt) / 4.0);
-            exponent *= -exponent;
-            return weightMin + (weightMax - weightMin) * std::exp(exponent);
+            exponent *= exponent;
+            return weightMin + (weightMax - weightMin) * std::exp(-exponent);
         }
     };
 
     template<typename Scalar,
         typename Objective,
-        typename Callback = NoCallback<Scalar>,
-        typename InertiaWeightStrategy = ConstantWeight<Scalar> >
+        typename InertiaWeightStrategy = ConstantWeight<Scalar>,
+        typename Callback = NoCallback<Scalar> >
     class Optimizer
     {
     public:
@@ -170,7 +170,8 @@ namespace pso
                     Scalar minval = bounds(0, j);
                     Scalar maxval = bounds(1, j);
                     Scalar diff = maxval - minval;
-                    velocities(j, i) = -diff + (dice_() * 2 * diff);
+                    Scalar vel = -diff + (dice_() * 2 * diff);
+                    velocities(j, i) = std::min(maxVel_, std::max(-maxVel_, vel));
                 }
             }
         }
