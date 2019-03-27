@@ -57,6 +57,33 @@ namespace pso
     };
 
     template<typename Scalar>
+    struct LinearDecreasingWeight
+    {
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+        typedef typename Matrix::Index Index;
+
+        Scalar weightMin;
+        Scalar weightMax;
+
+        LinearDecreasingWeight()
+            : LinearDecreasingWeight(0.4, 0.9)
+        { }
+
+        LinearDecreasingWeight(const Scalar weightMin,
+            const Scalar weightMax)
+            : weightMin(weightMin), weightMax(weightMax)
+        { }
+
+        Scalar operator()(const size_t iteration,
+            const size_t maxIt) const
+        {
+            Scalar factor = static_cast<Scalar>(iteration) / static_cast<Scalar>(maxIt);
+            return weightMin + (weightMax - weightMin) * factor;
+        }
+    };
+
+    template<typename Scalar>
     struct NaturalExponentWeight1
     {
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
