@@ -32,9 +32,87 @@ namespace pso
         }
     };
 
+    template<typename Scalar>
+    struct ConstantWeight
+    {
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+        typedef typename Matrix::Index Index;
+
+        Scalar weight;
+
+        ConstantWeight()
+            : ConstantWeight(1.0)
+        { }
+
+        ConstantWeight(const Scalar weight)
+            : weight(weight)
+        { }
+
+        Scalar operator()(const size_t,
+            const size_t) const
+        {
+            return weight;
+        }
+    };
+
+    template<typename Scalar>
+    struct NaturalExponentWeight1
+    {
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+        typedef typename Matrix::Index Index;
+
+        Scalar weightMin;
+        Scalar weightMax;
+
+        NaturalExponentWeight1()
+            : NaturalExponentWeight1(0.4, 0.9)
+        { }
+
+        NaturalExponentWeight1(const Scalar weightMin, const Scalar weightMax)
+            : weightMin(weightMin), weightMax(weightMax)
+        { }
+
+        Scalar operator()(const size_t iteration,
+            const size_t maxIt) const
+        {
+            Scalar exponent = - static_cast<Scalar>(iteration) / (static_cast<Scalar>(maxIt) / 10.0);
+            return weightMin + (weightMax - weightMin) * std::exp(exponent);
+        }
+    };
+
+    template<typename Scalar>
+    struct NaturalExponentWeight2
+    {
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+        typedef typename Matrix::Index Index;
+
+        Scalar weightMin;
+        Scalar weightMax;
+
+        NaturalExponentWeight2()
+            : NaturalExponentWeight2(0.4, 0.9)
+        { }
+
+        NaturalExponentWeight2(const Scalar weightMin, const Scalar weightMax)
+            : weightMin(weightMin), weightMax(weightMax)
+        { }
+
+        Scalar operator()(const size_t iteration,
+            const size_t maxIt) const
+        {
+            Scalar exponent = static_cast<Scalar>(iteration) / (static_cast<Scalar>(maxIt) / 4.0);
+            exponent *= -exponent;
+            return weightMin + (weightMax - weightMin) * std::exp(exponent);
+        }
+    };
+
     template<typename Scalar,
         typename Objective,
-        typename Callback = NoCallback<Scalar> >
+        typename Callback = NoCallback<Scalar>,
+        typename InertiaWeightStrategy = ConstantWeight<Scalar> >
     class Optimizer
     {
     public:
@@ -53,6 +131,7 @@ namespace pso
     private:
         Objective objective_;
         Callback callback_;
+        InertiaWeightStrategy weightStrategy_;
 
         size_t threads_;
 
@@ -60,9 +139,9 @@ namespace pso
         Scalar xeps_;
         Scalar feps_;
 
-        Scalar omega_;
         Scalar phip_;
         Scalar phig_;
+        Scalar maxVel_;
 
         bool verbose_;
 
@@ -121,6 +200,7 @@ namespace pso
         void calculateVelocities(const Matrix &particles,
             const Matrix &bestParticles,
             const Index gbest,
+            const size_t iteration,
             Matrix &velocities)
         {
             assert(velocities.rows() == particles.rows());
@@ -129,13 +209,20 @@ namespace pso
             assert(velocities.cols() == bestParticles.cols());
             assert(gbest < bestParticles.cols());
 
+            Scalar weight = weightStrategy_(iteration, maxit_);
+
             for(Index i = 0; i < velocities.cols(); ++i)
             {
                 for(Index j = 0; j < velocities.rows(); ++j)
                 {
                     Scalar velp = dice_() * (bestParticles(j, i) - particles(j, i));
                     Scalar velg = dice_() * (bestParticles(j, gbest) - particles(j, i));
-                    velocities(j, i) = omega_ * velocities(j, i) + phip_ * velp + phig_ * velg;
+                    Scalar vel = weight * velocities(j, i) + phip_ * velp + phig_ * velg;
+
+                    if(maxVel_ > 0)
+                        vel = std::min(maxVel_, std::max(-maxVel_, vel));
+
+                    velocities(j, i) = vel;
                 }
             }
         }
@@ -174,7 +261,7 @@ namespace pso
             while(fdiff > feps_ && xdiff > xeps_ && (maxit_ == 0 || iterations < maxit_))
             {
                 // calculate new velocities
-                calculateVelocities(particles, bestParticles, gbest, velocities);
+                calculateVelocities(particles, bestParticles, gbest, iterations, velocities);
 
                 // move particles by velocity and stay within bounds
                 particles += velocities;
@@ -239,9 +326,9 @@ namespace pso
     public:
 
         Optimizer()
-            : objective_(), callback_(), threads_(1), maxit_(0), xeps_(1e-6),
-            feps_(1e-6), omega_(0.45), phip_(0.9), phig_(0.9), verbose_(false),
-            dice_()
+            : objective_(), callback_(), weightStrategy_(), threads_(1),
+            maxit_(0), xeps_(1e-6), feps_(1e-6), phip_(2.0), phig_(2.0),
+            maxVel_(0.0), verbose_(false), dice_()
         {
             std::default_random_engine gen(std::time(0));
             std::uniform_real_distribution<Scalar> distrib(0.0, 1.0);
@@ -268,11 +355,6 @@ namespace pso
             feps_ = eps;
         }
 
-        void setOmega(const Scalar omega)
-        {
-            omega_ = omega;
-        }
-
         void setPhiParticles(const Scalar phip)
         {
             phip_ = phip;
@@ -296,6 +378,11 @@ namespace pso
         void setCallback(const Callback &callback)
         {
             callback_ = callback;
+        }
+
+        void setInertiaWeightStrategy(const InertiaWeightStrategy &weightStrategy)
+        {
+            weightStrategy_ = weightStrategy;
         }
 
         Result minimize(const Matrix &bounds,

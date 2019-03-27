@@ -40,6 +40,9 @@ TEST_CASE("Particle Swarm Optimization")
     Paraboloid<Scalar> parab;
     parab.offset.setZero(3);
     opt.setObjective(parab);
+    opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
+    opt.setPhiParticles(0.9);
+    opt.setPhiGlobal(0.9);
 
     opt.setMaxIterations(100);
 
