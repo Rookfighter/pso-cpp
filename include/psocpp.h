@@ -360,6 +360,11 @@ namespace pso
             phig_ = phig;
         }
 
+        void setMaxVelocity(const Scalar maxVel)
+        {
+            maxVel_ = maxVel;
+        }
+
         void setVerbose(const bool verbose)
         {
             verbose_ = verbose;
