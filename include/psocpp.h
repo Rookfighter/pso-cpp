@@ -162,7 +162,7 @@ namespace pso
 
     /** Inertia weight functor, which decreases exponentially with the number
      *  of iterations.
-     *  w = wMin + (wMax - wMin - d1) * exp(1 / (1 + d2 t / tMax)) */
+     *  w = (wMax - wMin - d1) * exp(1 / (1 + d2 t / tMax)) */
     template<typename Scalar>
     struct ExponentialDecrease3
     {
