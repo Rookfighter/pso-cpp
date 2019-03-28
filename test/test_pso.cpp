@@ -64,9 +64,9 @@ TEST_CASE("Particle Swarm Optimization")
             Eigen::MatrixXd bounds(2, 3);
             bounds << -5, -5, -5, 5, 5, 5;
 
-            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::NaturalExponentWeight1<Scalar>> opt;
+            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::ExponentialDecrease1<Scalar>> opt;
             opt.setObjective(parab);
-            opt.setInertiaWeightStrategy(pso::NaturalExponentWeight1<Scalar>(0.4, 0.9));
+            opt.setInertiaWeightStrategy(pso::ExponentialDecrease1<Scalar>(0.4, 0.9));
             opt.setPhiParticles(2.0);
             opt.setPhiGlobal(2.0);
             opt.setMaxIterations(100);
@@ -82,9 +82,9 @@ TEST_CASE("Particle Swarm Optimization")
             Eigen::MatrixXd bounds(2, 3);
             bounds << -5, -5, -5, 5, 5, 5;
 
-            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::NaturalExponentWeight2<Scalar>> opt;
+            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::ExponentialDecrease2<Scalar>> opt;
             opt.setObjective(parab);
-            opt.setInertiaWeightStrategy(pso::NaturalExponentWeight2<Scalar>(0.4, 0.9));
+            opt.setInertiaWeightStrategy(pso::ExponentialDecrease2<Scalar>(0.4, 0.9));
             opt.setPhiParticles(2.0);
             opt.setPhiGlobal(2.0);
             opt.setMaxIterations(100);

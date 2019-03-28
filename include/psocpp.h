@@ -19,6 +19,7 @@
 
 namespace pso
 {
+    /** Defalt callback functor which does nothing. */
     template<typename Scalar>
     struct NoCallback
     {
@@ -32,6 +33,8 @@ namespace pso
         }
     };
 
+    /** Inertia weight functor, which returns a constant weight regardless
+      * of the iteration. */
     template<typename Scalar>
     struct ConstantWeight
     {
@@ -39,6 +42,7 @@ namespace pso
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
         typedef typename Matrix::Index Index;
 
+        /** Inertia weight constant, which is returned by the functor. */
         Scalar weight;
 
         ConstantWeight()
@@ -56,21 +60,27 @@ namespace pso
         }
     };
 
+    /** Inertia weight functor, which decreases linearly with the number of
+     *  iterations. */
     template<typename Scalar>
-    struct LinearDecreasingWeight
+    struct LinearDecrease
     {
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
         typedef typename Matrix::Index Index;
 
+        /** Minimum inertia weight. The returned weight lies always in
+         *  [weightMin, weightMax]. */
         Scalar weightMin;
+        /** Maximum inertia weight. The returned weight lies always in
+         *  [weightMin, weightMax]. */
         Scalar weightMax;
 
-        LinearDecreasingWeight()
-            : LinearDecreasingWeight(0.4, 0.9)
+        LinearDecrease()
+            : LinearDecrease(0.4, 0.9)
         { }
 
-        LinearDecreasingWeight(const Scalar weightMin,
+        LinearDecrease(const Scalar weightMin,
             const Scalar weightMax)
             : weightMin(weightMin), weightMax(weightMax)
         { }
@@ -83,21 +93,28 @@ namespace pso
         }
     };
 
+    /** Inertia weight functor, which decreases exponentially with the number
+     *  of iterations.
+     *  w = wMin + (wMax - wMin) * exp(-t / (tMax / 10)) */
     template<typename Scalar>
-    struct NaturalExponentWeight1
+    struct ExponentialDecrease1
     {
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
         typedef typename Matrix::Index Index;
 
+        /** Minimum inertia weight. The returned weight lies always in
+         *  [weightMin, weightMax]. */
         Scalar weightMin;
+        /** Maximum inertia weight. The returned weight lies always in
+         *  [weightMin, weightMax]. */
         Scalar weightMax;
 
-        NaturalExponentWeight1()
-            : NaturalExponentWeight1(0.4, 0.9)
+        ExponentialDecrease1()
+            : ExponentialDecrease1(0.4, 0.9)
         { }
 
-        NaturalExponentWeight1(const Scalar weightMin, const Scalar weightMax)
+        ExponentialDecrease1(const Scalar weightMin, const Scalar weightMax)
             : weightMin(weightMin), weightMax(weightMax)
         { }
 
@@ -109,21 +126,28 @@ namespace pso
         }
     };
 
+    /** Inertia weight functor, which decreases exponentially with the number
+     *  of iterations.
+     *  w = wMin + (wMax - wMin) * exp(-(t / (tMax / 4))^2) */
     template<typename Scalar>
-    struct NaturalExponentWeight2
+    struct ExponentialDecrease2
     {
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
         typedef typename Matrix::Index Index;
 
+        /** Minimum inertia weight. The returned weight lies always in
+         *  [weightMin, weightMax]. */
         Scalar weightMin;
+        /** Maximum inertia weight. The returned weight lies always in
+         *  [weightMin, weightMax]. */
         Scalar weightMax;
 
-        NaturalExponentWeight2()
-            : NaturalExponentWeight2(0.4, 0.9)
+        ExponentialDecrease2()
+            : ExponentialDecrease2(0.4, 0.9)
         { }
 
-        NaturalExponentWeight2(const Scalar weightMin, const Scalar weightMax)
+        ExponentialDecrease2(const Scalar weightMin, const Scalar weightMax)
             : weightMin(weightMin), weightMax(weightMax)
         { }
 
