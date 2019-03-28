@@ -59,14 +59,47 @@ TEST_CASE("Particle Swarm Optimization")
             REQUIRE_MAT(Eigen::VectorXd::Zero(3), result.xval, 1e-3);
         }
 
-        SECTION("with natural exponent weight 1")
+        SECTION("with exponential weight decrease 1")
         {
             Eigen::MatrixXd bounds(2, 3);
             bounds << -5, -5, -5, 5, 5, 5;
 
             pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::ExponentialDecrease1<Scalar>> opt;
             opt.setObjective(parab);
-            opt.setInertiaWeightStrategy(pso::ExponentialDecrease1<Scalar>(0.4, 0.9));
+            opt.setPhiParticles(2.0);
+            opt.setPhiGlobal(2.0);
+            opt.setMaxIterations(100);
+
+            auto result = opt.minimize(bounds, 200);
+            REQUIRE(result.converged);
+            REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
+            REQUIRE_MAT(Eigen::VectorXd::Zero(3), result.xval, 1e-3);
+        }
+
+        SECTION("with exponential weight decrease 2")
+        {
+            Eigen::MatrixXd bounds(2, 3);
+            bounds << -5, -5, -5, 5, 5, 5;
+
+            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::ExponentialDecrease2<Scalar>> opt;
+            opt.setObjective(parab);
+            opt.setPhiParticles(2.0);
+            opt.setPhiGlobal(2.0);
+            opt.setMaxIterations(100);
+
+            auto result = opt.minimize(bounds, 200);
+            REQUIRE(result.converged);
+            REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
+            REQUIRE_MAT(Eigen::VectorXd::Zero(3), result.xval, 1e-3);
+        }
+
+        SECTION("with exponential weight decrease 3")
+        {
+            Eigen::MatrixXd bounds(2, 3);
+            bounds << -5, -5, -5, 5, 5, 5;
+
+            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::ExponentialDecrease3<Scalar>> opt;
+            opt.setObjective(parab);
             opt.setPhiParticles(2.0);
             opt.setPhiGlobal(2.0);
             opt.setMaxIterations(100);

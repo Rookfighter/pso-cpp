@@ -160,6 +160,45 @@ namespace pso
         }
     };
 
+    /** Inertia weight functor, which decreases exponentially with the number
+     *  of iterations.
+     *  w = wMin + (wMax - wMin - d1) * exp(1 / (1 + d2 t / tMax)) */
+    template<typename Scalar>
+    struct ExponentialDecrease3
+    {
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+        typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
+        typedef typename Matrix::Index Index;
+
+        /** Minimum inertia weight. */
+        Scalar weightMin;
+        /** Maximum inertia weight. */
+        Scalar weightMax;
+
+        /* Control factors. */
+        Scalar d1;
+        Scalar d2;
+
+        ExponentialDecrease3()
+            : ExponentialDecrease3(0.4, 0.95, 0.2, 7.0)
+        { }
+
+        ExponentialDecrease3(const Scalar weightMin,
+            const Scalar weightMax,
+            const Scalar d1,
+            const Scalar d2)
+            : weightMin(weightMin), weightMax(weightMax), d1(d1), d2(d2)
+        { }
+
+        Scalar operator()(const size_t iteration,
+            const size_t maxIt) const
+        {
+            Scalar itFac = static_cast<Scalar>(iteration) / static_cast<Scalar>(maxIt);
+            Scalar exponent = 1.0 / (1.0 + d2 * itFac);
+            return (weightMax - weightMin - d1) * std::exp(exponent);
+        }
+    };
+
     template<typename Scalar,
         typename Objective,
         typename InertiaWeightStrategy = ConstantWeight<Scalar>,
