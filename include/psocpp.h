@@ -334,7 +334,6 @@ namespace pso
             Vector diff(particles.rows());
 
             Index gbest = 0;
-            Index prevGbest = 0;
 
             // initialize velocities randomly
             randomizeVelocities(bounds, velocities);
@@ -363,7 +362,6 @@ namespace pso
 
                 prevParticles = bestParticles;
                 prevFvals = bestFvals;
-                prevGbest = gbest;
 
                 for(Index i = 0; i < fvals.size(); ++i)
                 {
