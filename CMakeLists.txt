@@ -31,6 +31,9 @@ include_directories(
 install(FILES include/psocpp.h DESTINATION include)
 
 if(${BUILD_TESTS})
-    # Compile tests
     add_subdirectory(test)
 endif(${BUILD_TESTS})
+
+if(${BUILD_EXAMPLES})
+    add_subdirectory(examples)
+endif(${BUILD_EXAMPLES})
