@@ -5,7 +5,7 @@
  *      Author: Fabian Meyer
  */
 
-#include "eigen_assert.h"
+#include "assert/eigen_require.h"
 #include <psocpp.h>
 
 template<typename Scalar>
@@ -30,7 +30,6 @@ struct Paraboloid
         return (state + offset).squaredNorm();
     }
 };
-
 
 
 template<typename Scalar>
@@ -60,6 +59,8 @@ typedef double Scalar;
 typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
 typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
 
+using namespace pso;
+
 TEST_CASE("Particle Swarm Optimization")
 {
     SECTION("optimize paraboloid")
@@ -82,7 +83,7 @@ TEST_CASE("Particle Swarm Optimization")
             auto result = opt.minimize(bounds, 200);
             REQUIRE(result.converged);
             REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
-            REQUIRE_MAT(Vector::Zero(3), result.xval, 1e-3);
+            REQUIRE_MATRIX_APPROX(Vector::Zero(3), result.xval, 1e-3);
         }
 
         SECTION("with exponential weight decrease 1")
@@ -99,7 +100,7 @@ TEST_CASE("Particle Swarm Optimization")
             auto result = opt.minimize(bounds, 200);
             REQUIRE(result.converged);
             REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
-            REQUIRE_MAT(Vector::Zero(3), result.xval, 1e-3);
+            REQUIRE_MATRIX_APPROX(Vector::Zero(3), result.xval, 1e-3);
         }
 
         SECTION("with exponential weight decrease 2")
@@ -116,7 +117,7 @@ TEST_CASE("Particle Swarm Optimization")
             auto result = opt.minimize(bounds, 200);
             REQUIRE(result.converged);
             REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
-            REQUIRE_MAT(Vector::Zero(3), result.xval, 1e-3);
+            REQUIRE_MATRIX_APPROX(Vector::Zero(3), result.xval, 1e-3);
         }
 
         SECTION("with exponential weight decrease 3")
@@ -133,7 +134,7 @@ TEST_CASE("Particle Swarm Optimization")
             auto result = opt.minimize(bounds, 200);
             REQUIRE(result.converged);
             REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
-            REQUIRE_MAT(Vector::Zero(3), result.xval, 1e-3);
+            REQUIRE_MATRIX_APPROX(Vector::Zero(3), result.xval, 1e-3);
         }
 
         SECTION("with natural exponent weight 2")
@@ -151,7 +152,7 @@ TEST_CASE("Particle Swarm Optimization")
             auto result = opt.minimize(bounds, 200);
             REQUIRE(result.converged);
             REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
-            REQUIRE_MAT(Vector::Zero(3), result.xval, 1e-3);
+            REQUIRE_MATRIX_APPROX(Vector::Zero(3), result.xval, 1e-3);
         }
 
         SECTION("with wrong bounds")
@@ -199,7 +200,7 @@ TEST_CASE("Particle Swarm Optimization")
             Vector stateExp(3);
             stateExp << -1, -1, -1;
 
-            REQUIRE_MAT(result.xval, stateExp, 1e-6);
+            REQUIRE_MATRIX_APPROX(result.xval, stateExp, 1e-6);
         }
 
         SECTION("in positive bounds")
@@ -224,7 +225,7 @@ TEST_CASE("Particle Swarm Optimization")
             Vector stateExp(3);
             stateExp << 1, 1, 1;
 
-            REQUIRE_MAT(result.xval, stateExp, 1e-6);
+            REQUIRE_MATRIX_APPROX(result.xval, stateExp, 1e-6);
         }
 
         SECTION("in mixed bounds")
@@ -249,7 +250,7 @@ TEST_CASE("Particle Swarm Optimization")
             Vector stateExp(3);
             stateExp << -1, 1, -1;
 
-            REQUIRE_MAT(result.xval, stateExp, 1e-6);
+            REQUIRE_MATRIX_APPROX(result.xval, stateExp, 1e-6);
         }
     }
 
@@ -265,7 +266,7 @@ TEST_CASE("Particle Swarm Optimization")
         auto result = opt.minimize(bounds, 50);
 
         REQUIRE(Approx(0.0).margin(1e-3) == result.fval);
-        REQUIRE_MAT(Vector::Zero(2), result.xval, 1e-3);
+        REQUIRE_MATRIX_APPROX(Vector::Zero(2), result.xval, 1e-3);
 
     }
 }

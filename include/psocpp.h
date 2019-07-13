@@ -19,13 +19,13 @@
 
 namespace pso
 {
+    typedef long int Index;
     /** Defalt callback functor which does nothing. */
     template<typename Scalar>
     struct NoCallback
     {
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-        typedef typename Matrix::Index Index;
 
         void operator()(const size_t, const Matrix&, const Vector &, const Index) const
         {
@@ -40,7 +40,6 @@ namespace pso
     {
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-        typedef typename Matrix::Index Index;
 
         /** Inertia weight constant, which is returned by the functor. */
         Scalar weight;
@@ -67,7 +66,6 @@ namespace pso
     {
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-        typedef typename Matrix::Index Index;
 
         /** Minimum inertia weight. The returned weight lies always in
          *  [weightMin, weightMax]. */
@@ -101,7 +99,6 @@ namespace pso
     {
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-        typedef typename Matrix::Index Index;
 
         /** Minimum inertia weight. The returned weight lies always in
          *  [weightMin, weightMax]. */
@@ -134,7 +131,6 @@ namespace pso
     {
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-        typedef typename Matrix::Index Index;
 
         /** Minimum inertia weight. The returned weight lies always in
          *  [weightMin, weightMax]. */
@@ -168,7 +164,6 @@ namespace pso
     {
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-        typedef typename Matrix::Index Index;
 
         /** Minimum inertia weight. */
         Scalar weightMin;
@@ -208,7 +203,6 @@ namespace pso
     public:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-        typedef typename Matrix::Index Index;
 
         struct Result
         {

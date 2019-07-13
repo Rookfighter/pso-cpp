@@ -26,16 +26,11 @@ add_subdirectory(dep)
 include_directories(
     include
     ${EIGEN3_INCLUDE_DIR}
-    ${CATCH2_INCLUDE_DIR}
 )
 
 install(FILES include/psocpp.h DESTINATION include)
 
 if(${BUILD_TESTS})
     # Compile tests
-    SET(TEST_SRC
-        "test/main.cpp"
-        "test/test_pso.cpp"
-    )
-    add_executable(run_tests ${TEST_SRC})
+    add_subdirectory(test)
 endif(${BUILD_TESTS})
