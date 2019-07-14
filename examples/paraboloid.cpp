@@ -4,7 +4,7 @@
 struct Paraboloid
 {
     template<typename Derived>
-    float operator()(const Eigen::MatrixBase<Derived> &xval) const
+    double operator()(const Eigen::MatrixBase<Derived> &xval) const
     {
         return xval(0) * xval(0) + xval(1) * xval(1);
     }
@@ -16,7 +16,7 @@ int main()
     // You can additionally specify an InertiaWeightStrategy functor as template
     // parameter.
     // You can additionally specify a Callback functor as template parameter.
-    pso::Optimizer<float, Paraboloid> optimizer;
+    pso::Optimizer<double, Paraboloid> optimizer;
 
     // Set number of iterations as stop criterion.
     // Set it to 0 or negative for infinite iterations (default is 0).
@@ -41,7 +41,7 @@ int main()
     // Set the bounds in which the optimizer should search.
     // Each column vector defines the (min, max) for each dimension  of the
     // particles.
-    Eigen::MatrixXf bounds(2, 2);
+    Eigen::MatrixXd bounds(2, 2);
     bounds << -4, -4,
                4,  4;
 
