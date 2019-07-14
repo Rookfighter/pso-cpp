@@ -404,8 +404,10 @@ namespace pso
 
         Optimizer()
             : objective_(), callback_(), weightStrategy_(), threads_(1),
-            maxit_(0), xeps_(1e-6), feps_(1e-6), phip_(2.0), phig_(2.0),
-            maxVel_(0.0), verbose_(false), dice_()
+            maxit_(0), xeps_(static_cast<Scalar>(1e-6)),
+            feps_(static_cast<Scalar>(1e-6)), phip_(static_cast<Scalar>(2.0)),
+            phig_(static_cast<Scalar>(2.0)), maxVel_(static_cast<Scalar>(0.0)),
+            verbose_(false), dice_()
         {
             std::default_random_engine gen(std::time(0));
             std::uniform_real_distribution<Scalar> distrib(0.0, 1.0);
