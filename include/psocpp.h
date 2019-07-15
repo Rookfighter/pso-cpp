@@ -20,21 +20,21 @@
 namespace pso
 {
     typedef long int Index;
-    /** Defalt callback functor which does nothing. */
+
+    /** Dummy callback functor, which does nothing. */
     template<typename Scalar>
     struct NoCallback
     {
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
 
-        void operator()(const size_t, const Matrix&, const Vector &, const Index) const
+        void operator()(const Index, const Matrix&, const Vector &, const Index) const
         {
 
         }
     };
 
-    /** Inertia weight functor, which returns a constant weight regardless
-      * of the iteration. */
+    /** Functor to return a constant inertia weight. */
     template<typename Scalar>
     struct ConstantWeight
     {
@@ -52,8 +52,8 @@ namespace pso
             : weight(weight)
         { }
 
-        Scalar operator()(const size_t,
-            const size_t) const
+        Scalar operator()(const Index,
+            const Index) const
         {
             return weight;
         }
@@ -83,8 +83,8 @@ namespace pso
             : weightMin(weightMin), weightMax(weightMax)
         { }
 
-        Scalar operator()(const size_t iteration,
-            const size_t maxIt) const
+        Scalar operator()(const Index iteration,
+            const Index maxIt) const
         {
             Scalar factor = static_cast<Scalar>(iteration) / static_cast<Scalar>(maxIt);
             return weightMin + (weightMax - weightMin) * factor;
@@ -115,8 +115,8 @@ namespace pso
             : weightMin(weightMin), weightMax(weightMax)
         { }
 
-        Scalar operator()(const size_t iteration,
-            const size_t maxIt) const
+        Scalar operator()(const Index iteration,
+            const Index maxIt) const
         {
             Scalar exponent = static_cast<Scalar>(iteration) / (static_cast<Scalar>(maxIt) / 10.0);
             return weightMin + (weightMax - weightMin) * std::exp(-exponent);
@@ -147,8 +147,8 @@ namespace pso
             : weightMin(weightMin), weightMax(weightMax)
         { }
 
-        Scalar operator()(const size_t iteration,
-            const size_t maxIt) const
+        Scalar operator()(const Index iteration,
+            const Index maxIt) const
         {
             Scalar exponent = static_cast<Scalar>(iteration) / (static_cast<Scalar>(maxIt) / 4.0);
             exponent *= exponent;
@@ -185,8 +185,8 @@ namespace pso
             : weightMin(weightMin), weightMax(weightMax), d1(d1), d2(d2)
         { }
 
-        Scalar operator()(const size_t iteration,
-            const size_t maxIt) const
+        Scalar operator()(const Index iteration,
+            const Index maxIt) const
         {
             Scalar itFac = static_cast<Scalar>(iteration) / static_cast<Scalar>(maxIt);
             Scalar exponent = 1.0 / (1.0 + d2 * itFac);
@@ -206,7 +206,7 @@ namespace pso
 
         struct Result
         {
-            size_t iterations;
+            Index iterations;
             bool converged;
             Scalar fval;
             Vector xval;
@@ -217,9 +217,9 @@ namespace pso
         Callback callback_;
         InertiaWeightStrategy weightStrategy_;
 
-        size_t threads_;
+        Index threads_;
 
-        size_t maxit_;
+        Index maxit_;
         Scalar xeps_;
         Scalar feps_;
 
@@ -305,7 +305,7 @@ namespace pso
         void calculateVelocities(const Matrix &particles,
             const Matrix &bestParticles,
             const Index gbest,
-            const size_t iteration,
+            const Index iteration,
             Matrix &velocities)
         {
             assert(velocities.rows() == particles.rows());
@@ -358,7 +358,7 @@ namespace pso
             bestFvals.minCoeff(&gbest);
 
             // init stop conditions
-            size_t iterations = 0;
+            Index iterations = 0;
             Scalar fdiff = std::numeric_limits<Scalar>::infinity();
             Scalar xdiff = std::numeric_limits<Scalar>::infinity();
 
@@ -437,12 +437,12 @@ namespace pso
             dice_ = std::bind(distrib, gen);
         }
 
-        void setThreads(const size_t threads)
+        void setThreads(const Index threads)
         {
             threads_ = threads;
         }
 
-        void setMaxIterations(const size_t maxit)
+        void setMaxIterations(const Index maxit)
         {
             maxit_ = maxit;
         }
@@ -493,7 +493,7 @@ namespace pso
         }
 
         Result minimize(const Matrix &bounds,
-            const size_t particleCnt)
+            const Index particleCnt)
         {
             if(particleCnt == 0)
                 throw std::runtime_error("particle count cannot be 0");
@@ -512,7 +512,7 @@ namespace pso
         }
 
         Result minimize(const Matrix &bounds,
-            const size_t particleCnt,
+            const Index particleCnt,
             const Vector &initGuess)
         {
             if(particleCnt == 0)
@@ -555,7 +555,7 @@ namespace pso
         }
 
         void getRandomParticles(const Matrix &bounds,
-            const size_t cnt,
+            const Index cnt,
             Matrix &particles)
         {
             particles.resize(bounds.cols(), cnt);
