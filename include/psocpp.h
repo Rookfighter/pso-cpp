@@ -231,6 +231,26 @@ namespace pso
 
         std::function<Scalar()> dice_;
 
+        template<typename Derived>
+        std::string vector2str(const Eigen::MatrixBase<Derived> &vec) const
+        {
+            std::stringstream ss1;
+            ss1 << std::fixed << std::showpoint << std::setprecision(6);
+            std::stringstream ss2;
+            ss2 << '[';
+            for(Index i = 0; i < vec.size(); ++i)
+            {
+                ss1 << vec(i);
+                ss2 << std::setfill(' ') << std::setw(10) << ss1.str();
+                if(i != vec.size() - 1)
+                    ss2 << ' ';
+                ss1.str("");
+            }
+            ss2 << ']';
+
+            return ss2.str();
+        }
+
         void randomizeParticles(const Matrix &bounds, Matrix &particles)
         {
             for(Index i = 0; i < particles.cols(); ++i)
@@ -377,13 +397,16 @@ namespace pso
 
                 if(verbose_)
                 {
-                    std::cout << "it=" << iterations
+                    std::stringstream ss;
+                    ss << "it=" << std::setfill('0')
+                        << std::setw(4) << iterations
                         << std::fixed << std::showpoint << std::setprecision(6)
-                        << "\tfdiff=" <<  fdiff
-                        << "\txdiff=" << xdiff
-                        << "\tf=" << bestFvals(gbest)
-                        << "\tx=" << bestParticles.col(gbest).transpose()
+                        << "    fchange=" <<  fdiff
+                        << "    xchange=" << xdiff
+                        << "    fval=" << bestFvals(gbest)
+                        << "    xval=" << vector2str(bestParticles.col(gbest))
                         << std::endl;
+                    std::cout << ss.str();
                 }
 
                 callback_(iterations, bestParticles, bestFvals, gbest);
@@ -424,12 +447,12 @@ namespace pso
             maxit_ = maxit;
         }
 
-        void setEpsilonX(const Scalar eps)
+        void setMinParticleChange(const Scalar change)
         {
-            xeps_ = eps;
+            xeps_ = change;
         }
 
-        void setEpsilonF(const Scalar eps)
+        void setMinFunctionChange(const Scalar eps)
         {
             feps_ = eps;
         }
