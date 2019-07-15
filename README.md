@@ -54,8 +54,12 @@ struct Paraboloid
 int main()
 {
     // Create optimizer object with Paraboloid functor as objective.
-    // You can additionally specify an InertiaWeightStrategy functor as template
-    // parameter.
+    //
+    // You can additionally specify an InertiaWeightStrategy functor as
+    // template parameter. There are ConstantWeight, LinearDecrease,
+    // ExponentialDecrease1, ExponentialDecrease2, ExponentialDecrease3
+    // available. (Default is ConstantWeight)
+    //
     // You can additionally specify a Callback functor as template parameter.
     pso::Optimizer<double, Paraboloid> optimizer;
 
@@ -64,12 +68,14 @@ int main()
     optimizer.setMaxIterations(100);
 
     // Set the minimum change of the x-values (particles) (default is 1e-6).
-    // If the change is lower then the optimizer stops minimizing.
-    optimizer.setEpsilonX(1e-3);
+    // If the change in the current iteration is lower than this value, then
+    // the optimizer stops minimizing.
+    optimizer.setMinParticleChange(1e-3);
 
     // Set the minimum change of the function values (default is 1e-6).
-    // If the change is lower then the optimizer stops minimizing.
-    optimizer.setEpsilonF(1e-3);
+    // If the change in the current iteration is lower than this value, then
+    // the optimizer stops minimizing.
+    optimizer.setMinFunctionChange(1e-3);
 
     // Set the number of threads used for evaluation (OpenMP only).
     // Set it to 0 or negative for auto detection (default is 1).
