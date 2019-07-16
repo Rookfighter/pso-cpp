@@ -95,7 +95,7 @@ int main()
 
     // Turn verbosity on, so the optimizer prints status updates after each
     // iteration.
-    optimizer.setVerbose(true);
+    optimizer.setVerbosity(2);
 
     // Set the bounds in which the optimizer should search.
     // Each column vector defines the (min, max) for each dimension  of the
