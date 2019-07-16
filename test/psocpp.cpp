@@ -73,7 +73,8 @@ TEST_CASE("Particle Swarm Optimization")
             Matrix bounds(2, 3);
             bounds << -5, -5, -5, 5, 5, 5;
 
-            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::ConstantWeight<Scalar>> opt;
+            pso::ParticleSwarmOptimization<Scalar, Paraboloid<Scalar>,
+                pso::ConstantWeight<Scalar>> opt;
             opt.setObjective(parab);
             opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
             opt.setPhiParticles(0.9);
@@ -91,7 +92,8 @@ TEST_CASE("Particle Swarm Optimization")
             Matrix bounds(2, 3);
             bounds << -5, -5, -5, 5, 5, 5;
 
-            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::ExponentialDecrease1<Scalar>> opt;
+            pso::ParticleSwarmOptimization<Scalar, Paraboloid<Scalar>,
+                pso::ExponentialDecrease1<Scalar>> opt;
             opt.setObjective(parab);
             opt.setPhiParticles(2.0);
             opt.setPhiGlobal(2.0);
@@ -108,7 +110,8 @@ TEST_CASE("Particle Swarm Optimization")
             Matrix bounds(2, 3);
             bounds << -5, -5, -5, 5, 5, 5;
 
-            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::ExponentialDecrease2<Scalar>> opt;
+            pso::ParticleSwarmOptimization<Scalar, Paraboloid<Scalar>,
+                pso::ExponentialDecrease2<Scalar>> opt;
             opt.setObjective(parab);
             opt.setPhiParticles(2.0);
             opt.setPhiGlobal(2.0);
@@ -125,7 +128,8 @@ TEST_CASE("Particle Swarm Optimization")
             Matrix bounds(2, 3);
             bounds << -5, -5, -5, 5, 5, 5;
 
-            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::ExponentialDecrease3<Scalar>> opt;
+            pso::ParticleSwarmOptimization<Scalar, Paraboloid<Scalar>,
+                pso::ExponentialDecrease3<Scalar>> opt;
             opt.setObjective(parab);
             opt.setPhiParticles(2.0);
             opt.setPhiGlobal(2.0);
@@ -142,7 +146,8 @@ TEST_CASE("Particle Swarm Optimization")
             Matrix bounds(2, 3);
             bounds << -5, -5, -5, 5, 5, 5;
 
-            pso::Optimizer<Scalar, Paraboloid<Scalar>, pso::ExponentialDecrease2<Scalar>> opt;
+            pso::ParticleSwarmOptimization<Scalar, Paraboloid<Scalar>,
+                pso::ExponentialDecrease2<Scalar>> opt;
             opt.setObjective(parab);
             opt.setInertiaWeightStrategy(pso::ExponentialDecrease2<Scalar>(0.4, 0.9));
             opt.setPhiParticles(2.0);
@@ -157,7 +162,7 @@ TEST_CASE("Particle Swarm Optimization")
 
         SECTION("with wrong bounds")
         {
-            pso::Optimizer<Scalar, Paraboloid<Scalar>> opt;
+            pso::ParticleSwarmOptimization<Scalar, Paraboloid<Scalar>> opt;
             opt.setObjective(parab);
             opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
             opt.setPhiParticles(0.9);
@@ -180,7 +185,7 @@ TEST_CASE("Particle Swarm Optimization")
 
         SECTION("in negative bounds")
         {
-            pso::Optimizer<Scalar, Paraboloid<Scalar>> opt;
+            pso::ParticleSwarmOptimization<Scalar, Paraboloid<Scalar>> opt;
             opt.setObjective(parab);
             opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
             opt.setPhiParticles(0.9);
@@ -205,7 +210,7 @@ TEST_CASE("Particle Swarm Optimization")
 
         SECTION("in positive bounds")
         {
-            pso::Optimizer<Scalar, Paraboloid<Scalar>> opt;
+            pso::ParticleSwarmOptimization<Scalar, Paraboloid<Scalar>> opt;
             opt.setObjective(parab);
             opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
             opt.setPhiParticles(0.9);
@@ -230,7 +235,7 @@ TEST_CASE("Particle Swarm Optimization")
 
         SECTION("in mixed bounds")
         {
-            pso::Optimizer<Scalar, Paraboloid<Scalar>> opt;
+            pso::ParticleSwarmOptimization<Scalar, Paraboloid<Scalar>> opt;
             opt.setObjective(parab);
             opt.setInertiaWeightStrategy(pso::ConstantWeight<Scalar>(0.45));
             opt.setPhiParticles(0.9);
@@ -259,7 +264,7 @@ TEST_CASE("Particle Swarm Optimization")
         Matrix bounds(2, 2);
         bounds << -5, -5, 5, 5;
 
-        pso::Optimizer<Scalar, Ackley<Scalar>,
+        pso::ParticleSwarmOptimization<Scalar, Ackley<Scalar>,
             pso::ExponentialDecrease1<Scalar>> opt;
         opt.setMaxIterations(100);
 

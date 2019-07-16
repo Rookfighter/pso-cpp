@@ -31,7 +31,7 @@ int main()
     // available. (Default is ConstantWeight)
     //
     // You can additionally specify a Callback functor as template parameter.
-    pso::Optimizer<double, Ackley,
+    pso::ParticleSwarmOptimization<double, Ackley,
         pso::ExponentialDecrease2<double>> optimizer;
 
     // Set number of iterations as stop criterion.

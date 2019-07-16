@@ -198,7 +198,7 @@ namespace pso
         typename Objective,
         typename InertiaWeightStrategy = ConstantWeight<Scalar>,
         typename Callback = NoCallback<Scalar> >
-    class Optimizer
+    class ParticleSwarmOptimization
     {
     public:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
@@ -219,7 +219,7 @@ namespace pso
 
         Index threads_;
 
-        Index maxit_;
+        Index maxIt_;
         Scalar xeps_;
         Scalar feps_;
 
@@ -314,7 +314,7 @@ namespace pso
             assert(velocities.cols() == bestParticles.cols());
             assert(gbest < bestParticles.cols());
 
-            Scalar weight = weightStrategy_(iteration, maxit_);
+            Scalar weight = weightStrategy_(iteration, maxIt_);
 
             for(Index i = 0; i < velocities.cols(); ++i)
             {
@@ -362,7 +362,7 @@ namespace pso
             Scalar fdiff = std::numeric_limits<Scalar>::infinity();
             Scalar xdiff = std::numeric_limits<Scalar>::infinity();
 
-            while(fdiff > feps_ && xdiff > xeps_ && (maxit_ == 0 || iterations < maxit_))
+            while(fdiff > feps_ && xdiff > xeps_ && (maxIt_ == 0 || iterations < maxIt_))
             {
                 // calculate new velocities
                 calculateVelocities(particles, bestParticles, gbest, iterations, velocities);
@@ -426,9 +426,9 @@ namespace pso
 
     public:
 
-        Optimizer()
+        ParticleSwarmOptimization()
             : objective_(), callback_(), weightStrategy_(), threads_(1),
-            maxit_(0), xeps_(static_cast<Scalar>(1e-6)),
+            maxIt_(0), xeps_(static_cast<Scalar>(1e-6)),
             feps_(static_cast<Scalar>(1e-6)), phip_(static_cast<Scalar>(2.0)),
             phig_(static_cast<Scalar>(2.0)), maxVel_(static_cast<Scalar>(0.0)),
             verbosity_(0), dice_()
@@ -445,7 +445,7 @@ namespace pso
 
         void setMaxIterations(const Index maxit)
         {
-            maxit_ = maxit;
+            maxIt_ = maxit;
         }
 
         void setMinParticleChange(const Scalar change)

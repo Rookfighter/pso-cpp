@@ -20,7 +20,7 @@ int main()
     // available. (Default is ConstantWeight)
     //
     // You can additionally specify a Callback functor as template parameter.
-    pso::Optimizer<double, Paraboloid> optimizer;
+    pso::ParticleSwarmOptimization<double, Paraboloid> optimizer;
 
     // Set number of iterations as stop criterion.
     // Set it to 0 or negative for infinite iterations (default is 0).
