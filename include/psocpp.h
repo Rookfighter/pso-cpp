@@ -227,7 +227,7 @@ namespace pso
         Scalar phig_;
         Scalar maxVel_;
 
-        bool verbose_;
+        Index verbosity_;
 
         std::function<Scalar()> dice_;
 
@@ -395,7 +395,7 @@ namespace pso
                 xdiff /= bestParticles.cols();
                 fdiff /= bestFvals.size();
 
-                if(verbose_)
+                if(verbosity_ > 0)
                 {
                     std::stringstream ss;
                     ss << "it=" << std::setfill('0')
@@ -403,10 +403,11 @@ namespace pso
                         << std::fixed << std::showpoint << std::setprecision(6)
                         << "    fchange=" <<  fdiff
                         << "    xchange=" << xdiff
-                        << "    fval=" << bestFvals(gbest)
-                        << "    xval=" << vector2str(bestParticles.col(gbest))
-                        << std::endl;
-                    std::cout << ss.str();
+                        << "    fval=" << bestFvals(gbest);
+                    if(verbosity_ > 1)
+                        ss << "    xval=" << vector2str(bestParticles.col(gbest));
+
+                    std::cout << ss.str() << std::endl;;
                 }
 
                 callback_(iterations, bestParticles, bestFvals, gbest);
@@ -430,7 +431,7 @@ namespace pso
             maxit_(0), xeps_(static_cast<Scalar>(1e-6)),
             feps_(static_cast<Scalar>(1e-6)), phip_(static_cast<Scalar>(2.0)),
             phig_(static_cast<Scalar>(2.0)), maxVel_(static_cast<Scalar>(0.0)),
-            verbose_(false), dice_()
+            verbosity_(0), dice_()
         {
             std::default_random_engine gen(std::time(0));
             std::uniform_real_distribution<Scalar> distrib(0.0, 1.0);
@@ -472,9 +473,9 @@ namespace pso
             maxVel_ = maxVel;
         }
 
-        void setVerbose(const bool verbose)
+        void setVerbosity(const Index verbosity)
         {
-            verbose_ = verbose;
+            verbosity_ = verbosity;
         }
 
         void setObjective(const Objective &objective)
