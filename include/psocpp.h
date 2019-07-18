@@ -28,9 +28,9 @@ namespace pso
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
 
-        void operator()(const Index, const Matrix&, const Vector &, const Index) const
+        bool operator()(const Index, const Matrix&, const Vector &, const Index) const
         {
-
+            return true;
         }
     };
 
@@ -410,7 +410,8 @@ namespace pso
                     std::cout << ss.str() << std::endl;;
                 }
 
-                callback_(iterations, bestParticles, bestFvals, gbest);
+                if(!callback_(iterations, bestParticles, bestFvals, gbest))
+                    break;
 
                 ++iterations;
             }
