@@ -359,10 +359,11 @@ namespace pso
 
             // init stop conditions
             Index iterations = 0;
-            Scalar fdiff = std::numeric_limits<Scalar>::infinity();
-            Scalar xdiff = std::numeric_limits<Scalar>::infinity();
+            Scalar fchange = feps_ + 1;
+            Scalar xchange = xeps_ + 1;
 
-            while(fdiff > feps_ && xdiff > xeps_ && (maxIt_ == 0 || iterations < maxIt_))
+            while((maxIt_ == 0 || iterations < maxIt_) &&
+                fchange > feps_ && xchange > xeps_)
             {
                 // calculate new velocities
                 calculateVelocities(particles, bestParticles, gbest, iterations, velocities);
@@ -389,11 +390,15 @@ namespace pso
                 bestFvals.minCoeff(&gbest);
 
                 // calculate new diffs
-                xdiff = (bestParticles - prevParticles).colwise().norm().sum();
-                fdiff = (bestFvals - prevFvals).array().abs().sum();
+                xchange = (bestParticles - prevParticles).colwise().norm().sum();
+                fchange = (bestFvals - prevFvals).array().abs().sum();
 
-                xdiff /= bestParticles.cols();
-                fdiff /= bestFvals.size();
+                xchange /= bestParticles.cols();
+                fchange /= bestFvals.size();
+
+                // evaluate callback and save its result
+                bool callbackResult = callback_(iterations, bestParticles,
+                    bestFvals, gbest);
 
                 if(verbosity_ > 0)
                 {
@@ -401,8 +406,9 @@ namespace pso
                     ss << "it=" << std::setfill('0')
                         << std::setw(4) << iterations
                         << std::fixed << std::showpoint << std::setprecision(6)
-                        << "    fchange=" <<  fdiff
-                        << "    xchange=" << xdiff
+                        << "    fchange=" << fchange
+                        << "    xchange=" << xchange
+                        << "    callback=" << (callbackResult ? "true" : "false")
                         << "    fval=" << bestFvals(gbest);
                     if(verbosity_ > 1)
                         ss << "    xval=" << vector2str(bestParticles.col(gbest));
@@ -410,15 +416,12 @@ namespace pso
                     std::cout << ss.str() << std::endl;;
                 }
 
-                if(!callback_(iterations, bestParticles, bestFvals, gbest))
-                    break;
-
                 ++iterations;
             }
 
             Result result;
             result.iterations = iterations;
-            result.converged = fdiff <= feps_ || xdiff <= xeps_;
+            result.converged = fchange <= feps_ || xchange <= xeps_;
             result.fval = bestFvals(gbest);
             result.xval = bestParticles.col(gbest);
 
