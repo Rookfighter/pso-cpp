@@ -407,9 +407,13 @@ namespace pso
                         << std::setw(4) << iterations
                         << std::fixed << std::showpoint << std::setprecision(6)
                         << "    fchange=" << fchange
-                        << "    xchange=" << xchange
-                        << "    callback=" << (callbackResult ? "true" : "false")
-                        << "    fval=" << bestFvals(gbest);
+                        << "    xchange=" << xchange;
+
+                    if(verbosity_ > 2)
+                        ss << "    callback=" << (callbackResult ? "true" : "false");
+
+                    ss << "    fval=" << bestFvals(gbest);
+
                     if(verbosity_ > 1)
                         ss << "    xval=" << vector2str(bestParticles.col(gbest));
 
