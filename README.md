@@ -6,7 +6,7 @@
 ![Appveyer Status](https://ci.appveyor.com/api/projects/status/cl5iljq9bq6lcusu?svg=true)
 
 pso-cpp is a header-only C++ library for particle swarm optimization using
-the Eigen3 linear algebra library.
+the ```Eigen3``` linear algebra library.
 
 ## Install
 
@@ -21,14 +21,16 @@ cmake ..
 make install
 ```
 
-The library requires Eigen3 to be installed on your system.
+The library requires ```Eigen3``` to be installed on your system.
 In Debian based systems you can simply type
 
 ```bash
 apt-get install libeigen3-dev
 ```
 
-Make sure Eigen3 can be found by your build system.
+Make sure ```Eigen3``` can be found by your build system.
+
+You can use the CMake Find module in ```cmake/``` to find the installed header.
 
 ## Usage
 
