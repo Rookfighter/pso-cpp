@@ -1,4 +1,4 @@
-# FindPSOCPP.txt
+# FindPSOCpp.txt
 #
 #     Author: Fabian Meyer
 # Created On: 05 Aug 2019
@@ -7,10 +7,10 @@
 #   PSOCPP_INCLUDE_DIR
 #   PSOCPP_FOUND
 
-find_path(PSOCPP_INCLUDE_DIR
+find_path(PSOCPP_INCLUDE_DIR "psocpp.h"
     HINTS
-    ${PSOCPP_ROOT}
-    ENV PSOCPP_ROOT
+    "${PSOCPP_ROOT}/include"
+    "$ENV{PSOCPP_ROOT}/include"
 )
 
 include(FindPackageHandleStandardArgs)
