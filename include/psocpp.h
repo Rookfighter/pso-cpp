@@ -19,12 +19,14 @@
 
 namespace pso
 {
+    /** Integer type for indexing arrays, vectors and matrices. */
     typedef long int Index;
 
-    /** Dummy callback functor, which does nothing. */
+    /** @brief Dummy callback functor, which always and only returns true. */
     template<typename Scalar>
-    struct NoCallback
+    class NoCallback
     {
+    public:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
 
@@ -34,117 +36,134 @@ namespace pso
         }
     };
 
-    /** Functor to return a constant inertia weight. */
+    /** @brief Inertia weight functor, which returns a constant weight. */
     template<typename Scalar>
-    struct ConstantWeight
+    class ConstantWeight
     {
+    public:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-
-        /** Inertia weight constant, which is returned by the functor. */
-        Scalar weight;
-
+    private:
+        Scalar weight_;
+    public:
         ConstantWeight()
             : ConstantWeight(1.0)
         { }
 
+        /** Constructor, which accepts the weight that is returned by the functor.
+          * @param weight constant which will be returned as inertia weight */
         ConstantWeight(const Scalar weight)
-            : weight(weight)
+            : weight_(weight)
         { }
 
         Scalar operator()(const Index,
             const Index) const
         {
-            return weight;
+            return weight_;
         }
     };
 
-    /** Inertia weight functor, which decreases linearly with the number of
-     *  iterations. */
+    /** @brief Inertia weight functor, which decreases linearly over time.
+      *
+      * The inertia weight is calculated by the following formula:
+      *
+      * w = wMin + (wMax - wMin) * (t / tMax) */
     template<typename Scalar>
-    struct LinearDecrease
+    class LinearDecrease
     {
+    public:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-
-        /** Minimum inertia weight. The returned weight lies always in
-         *  [weightMin, weightMax]. */
-        Scalar weightMin;
-        /** Maximum inertia weight. The returned weight lies always in
-         *  [weightMin, weightMax]. */
-        Scalar weightMax;
-
+    private:
+        Scalar weightMin_;
+        Scalar weightMax_;
+    public:
         LinearDecrease()
             : LinearDecrease(0.4, 0.9)
         { }
 
-        LinearDecrease(const Scalar weightMin,
-            const Scalar weightMax)
-            : weightMin(weightMin), weightMax(weightMax)
+        /** @brief Constructor, which accepts the minimum and maximum weight of
+          * the linear decrease.
+          *
+          * The returned inertia weight always lies in the interval [minval, maxval].
+          * @param minval lower bound of the inertia weight
+          * @param maxval upper bound of the inertia weight */
+        LinearDecrease(const Scalar minval,
+            const Scalar maxval)
+            : weightMin_(minval), weightMax_(maxval)
         { }
 
         Scalar operator()(const Index iteration,
             const Index maxIt) const
         {
             Scalar factor = static_cast<Scalar>(iteration) / static_cast<Scalar>(maxIt);
-            return weightMin + (weightMax - weightMin) * factor;
+            return weightMin_ + (weightMax_ - weightMin_) * factor;
         }
     };
 
-    /** Inertia weight functor, which decreases exponentially with the number
-     *  of iterations.
-     *  w = wMin + (wMax - wMin) * exp(-t / (tMax / 10)) */
+    /** @brief Inertia weight functor, which decreases exponentially over time.
+      *
+      * The inertia weight is calculated by the following formula:
+      *
+      * w = wMin + (wMax - wMin) * exp(-t / (tMax / 10)) */
     template<typename Scalar>
-    struct ExponentialDecrease1
+    class ExponentialDecrease1
     {
+    public:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-
-        /** Minimum inertia weight. The returned weight lies always in
-         *  [weightMin, weightMax]. */
-        Scalar weightMin;
-        /** Maximum inertia weight. The returned weight lies always in
-         *  [weightMin, weightMax]. */
-        Scalar weightMax;
+    private:
+        Scalar weightMin_;
+        Scalar weightMax_;
+    public:
 
         ExponentialDecrease1()
             : ExponentialDecrease1(0.4, 0.9)
         { }
 
-        ExponentialDecrease1(const Scalar weightMin, const Scalar weightMax)
-            : weightMin(weightMin), weightMax(weightMax)
+        /** Constructor, which accepts the minimum and maximum weight of the
+          * exponential decrease.
+          * The returned inertia weight always lies in the interval [minval, maxval].
+          * @param minval lower bound of the inertia weight
+          * @param maxval upper bound of the inertia weight */
+        ExponentialDecrease1(const Scalar minval, const Scalar maxval)
+            : weightMin_(minval), weightMax_(maxval)
         { }
 
         Scalar operator()(const Index iteration,
             const Index maxIt) const
         {
             Scalar exponent = static_cast<Scalar>(iteration) / (static_cast<Scalar>(maxIt) / 10.0);
-            return weightMin + (weightMax - weightMin) * std::exp(-exponent);
+            return weightMin_ + (weightMax_ - weightMin_) * std::exp(-exponent);
         }
     };
 
-    /** Inertia weight functor, which decreases exponentially with the number
-     *  of iterations.
-     *  w = wMin + (wMax - wMin) * exp(-(t / (tMax / 4))^2) */
+    /** @brief Inertia weight functor, which decreases exponentially over time.
+      *
+      * The inertia weight is calculated by the following formula:
+      *
+      * w = wMin + (wMax - wMin) * exp(-(t / (tMax / 4))^2) */
     template<typename Scalar>
-    struct ExponentialDecrease2
+    class ExponentialDecrease2
     {
+    public:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-
-        /** Minimum inertia weight. The returned weight lies always in
-         *  [weightMin, weightMax]. */
-        Scalar weightMin;
-        /** Maximum inertia weight. The returned weight lies always in
-         *  [weightMin, weightMax]. */
-        Scalar weightMax;
-
+    private:
+        Scalar weightMin_;
+        Scalar weightMax_;
+    public:
         ExponentialDecrease2()
             : ExponentialDecrease2(0.4, 0.9)
         { }
 
-        ExponentialDecrease2(const Scalar weightMin, const Scalar weightMax)
-            : weightMin(weightMin), weightMax(weightMax)
+        /** Constructor, which accepts the minimum and maximum weight of the
+          * exponential decrease.
+          * The returned inertia weight always lies in the interval [minval, maxval].
+          * @param minval lower bound of the inertia weight
+          * @param maxval upper bound of the inertia weight */
+        ExponentialDecrease2(const Scalar minval, const Scalar maxval)
+            : weightMin_(minval), weightMax_(maxval)
         { }
 
         Scalar operator()(const Index iteration,
@@ -152,48 +171,68 @@ namespace pso
         {
             Scalar exponent = static_cast<Scalar>(iteration) / (static_cast<Scalar>(maxIt) / 4.0);
             exponent *= exponent;
-            return weightMin + (weightMax - weightMin) * std::exp(-exponent);
+            return weightMin_ + (weightMax_ - weightMin_) * std::exp(-exponent);
         }
     };
 
-    /** Inertia weight functor, which decreases exponentially with the number
-     *  of iterations.
-     *  w = (wMax - wMin - d1) * exp(1 / (1 + d2 t / tMax)) */
+    /** @brief Inertia weight functor, which decreases exponentially over time.
+      *
+      * The inertia weight is calculated by the following formula:
+      *
+      * w = (wMax - wMin - d1) * exp(1 / (1 + d2 t / tMax)) */
     template<typename Scalar>
-    struct ExponentialDecrease3
+    class ExponentialDecrease3
     {
+    public:
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> Matrix;
         typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector;
-
-        /** Minimum inertia weight. */
-        Scalar weightMin;
-        /** Maximum inertia weight. */
-        Scalar weightMax;
-
-        /* Control factors. */
-        Scalar d1;
-        Scalar d2;
+    private:
+        Scalar weightMin_;
+        Scalar weightMax_;
+        /** Control factors */
+        Scalar d1_;
+        Scalar d2_;
+    public:
 
         ExponentialDecrease3()
             : ExponentialDecrease3(0.4, 0.95, 0.2, 7.0)
         { }
 
-        ExponentialDecrease3(const Scalar weightMin,
-            const Scalar weightMax,
+        /** Constructor, which accepts the minimum and maximum weight and two
+          * control factors of the exponential decrease.
+          * The returned inertia weight always lies in the interval [minval, maxval].
+          * @param minval lower bound of the inertia weight
+          * @param maxval upper bound of the inertia weight
+          * @param d1 first control factor
+          * @param d2 second control factor */
+        ExponentialDecrease3(const Scalar minval,
+            const Scalar maxval,
             const Scalar d1,
             const Scalar d2)
-            : weightMin(weightMin), weightMax(weightMax), d1(d1), d2(d2)
+            : weightMin_(minval), weightMax_(maxval), d1_(d1), d2_(d2)
         { }
 
         Scalar operator()(const Index iteration,
             const Index maxIt) const
         {
             Scalar itFac = static_cast<Scalar>(iteration) / static_cast<Scalar>(maxIt);
-            Scalar exponent = 1.0 / (1.0 + d2 * itFac);
-            return (weightMax - weightMin - d1) * std::exp(exponent);
+            Scalar exponent = 1.0 / (1.0 + d2_ * itFac);
+            return (weightMax_ - weightMin_ - d1_) * std::exp(exponent);
         }
     };
 
+    /** @brief Implements the paricle swarm optimization agorithm.
+      *
+      * The optimization process can be configured by providing an inertia
+      * weight strategy functor and a callback.
+      *
+      * The inertia weight functor determines the amount of velocity, which is
+      * is maintained from the previous iterations. It has a huge effect on
+      * convergence speed and stability of the optimization.
+      *
+      * The callback functor is called after each iteration and returns a boolean.
+      * If it returns false the optimization process is stopped. As such, the
+      * callback allows to implement additional stop criteria. */
     template<typename Scalar,
         typename Objective,
         typename InertiaWeightStrategy = ConstantWeight<Scalar>,
@@ -446,41 +485,78 @@ namespace pso
             dice_ = std::bind(distrib, gen);
         }
 
+        /** Set the amount of threads, which are used for evaluating the
+          * individual particles (OMP only).
+          * Set to 0 or negative to allow auto detection.
+          * @param threads maximum number of threads for evaluation */
         void setThreads(const Index threads)
         {
             threads_ = threads;
         }
 
-        void setMaxIterations(const Index maxit)
+        /** Set the maximum number of iterations.
+          * Set to 0 or negative for infinite iterations.
+          * @param iterations maximum number of iterations */
+        void setMaxIterations(const Index iterations)
         {
-            maxIt_ = maxit;
+            maxIt_ = iterations;
         }
 
+        /** Set the minimum average change of particles per iteration.
+          * If the average change of particles (input parameters) falls below
+          * this value, the optimization terminates.
+          * @param change minimum change of input paramaters */
         void setMinParticleChange(const Scalar change)
         {
             xeps_ = change;
         }
 
-        void setMinFunctionChange(const Scalar eps)
+        /** Set the minimum average change of function values per iteration.
+          * If the average change of functions values falls below
+          * this value, the optimization terminates.
+          * @param change minimum change of function values */
+        void setMinFunctionChange(const Scalar change)
         {
-            feps_ = eps;
+            feps_ = change;
         }
 
+        /** Set the tendency of particles to move towards their local optimum
+          * found so far.
+          * Each particle individually maintains a memory of where it has
+          * visited the lowest function value so far.
+          * Increasing this value increases the particles' tendency to move
+          * towards that point.
+          * @param phip tendency to move towards individual optimum */
         void setPhiParticles(const Scalar phip)
         {
             phip_ = phip;
         }
 
+        /** Set the tendency of particles to move towards the global optimum
+          * found so far.
+          * The swarm maintains a collective memory of where it has visited the
+          * lowest function value so far.
+          * Increasing this value increases the particles' tendency to move
+          * towards that point.
+          * @param phig tendency to move towards collective optimum */
         void setPhiGlobal(const Scalar phig)
         {
             phig_ = phig;
         }
 
-        void setMaxVelocity(const Scalar maxVel)
+        /** Set an upper bound for the velocity of particles.
+          * A particle cannot move faster than this value, which may prevent
+          * divergence.
+          * @param maxvel maximum velocity of a particle */
+        void setMaxVelocity(const Scalar maxvel)
         {
-            maxVel_ = maxVel;
+            maxVel_ = maxvel;
         }
 
+        /** Set the level of verbosity during optimization.
+          * Verbosity increases with increasing value.
+          * 0 means no output and it can be raised up to level 3.
+          * @param verbosity level of verbosity */
         void setVerbosity(const Index verbosity)
         {
             verbosity_ = verbosity;
@@ -501,10 +577,21 @@ namespace pso
             weightStrategy_ = weightStrategy;
         }
 
+        /** Perform minimization with the given bounds and number of particels.
+          *
+          * The swarm of particles will be drawn uniform randomly within the
+          * given bounds.
+          *
+          * The bounds matrix has to have 2 rows and one column per dimension
+          * of particle. The first row holds the minimum value of the respective
+          * dimension and the second row holds the maximum value.
+          *
+          * @param bounds 2xM matrix for bounds of M-dimensional particles
+          * @param cnt number of particles used for optimization */
         Result minimize(const Matrix &bounds,
-            const Index particleCnt)
+            const Index cnt)
         {
-            if(particleCnt == 0)
+            if(cnt == 0)
                 throw std::runtime_error("particle count cannot be 0");
             if(bounds.rows() != 2)
                 throw std::runtime_error("bounds has not exactly 2 rows (min, max)");
@@ -514,17 +601,34 @@ namespace pso
                     throw std::runtime_error("bounds min is greater than max");
             }
 
-            Matrix particles(bounds.cols(), particleCnt);
+            Matrix particles(bounds.cols(), cnt);
             randomizeParticles(bounds, particles);
 
             return _minimize(bounds, particles);
         }
 
+        /** Perform minimization with the given bounds, number of particels and
+          * initial guess.
+          *
+          * The swarm of particles will be drawn uniform randomly within the
+          * given bounds.
+          *
+          * The bounds matrix has to have 2 rows and one column per dimension
+          * of particle. The first row holds the minimum value of the respective
+          * dimension and the second row holds the maximum value.
+          *
+          * The initial guess vector has to have the same length as the number
+          * of columns of the bounds. It will be included as one particle of
+          * the swarm.
+          *
+          * @param bounds 2xM matrix for bounds of M-dimensional particles
+          * @param cnt number of particles used for optimization
+          * @param initGuess initial guess for a particle */
         Result minimize(const Matrix &bounds,
-            const Index particleCnt,
+            const Index cnt,
             const Vector &initGuess)
         {
-            if(particleCnt == 0)
+            if(cnt == 0)
                 throw std::runtime_error("particle count cannot be 0");
             if(bounds.rows() != 2)
                 throw std::runtime_error("bounds has not exactly 2 rows (min, max)");
@@ -536,7 +640,7 @@ namespace pso
             if(bounds.cols() != initGuess.size())
                 throw std::runtime_error("init guess and bounds have different dimensions");
 
-            Matrix particles(bounds.cols(), particleCnt);
+            Matrix particles(bounds.cols(), cnt);
             randomizeParticles(bounds, particles);
             particles.col(0) = initGuess;
             maintainBounds(bounds, particles);
@@ -544,6 +648,15 @@ namespace pso
             return _minimize(bounds, particles);
         }
 
+        /** Perform minimization with the given bounds and a pre-computed
+          * swarm of particles.
+          *
+          * The bounds matrix has to have 2 rows and one column per dimension
+          * of particle. The first row holds the minimum value of the respective
+          * dimension and the second row holds the maximum value.
+          *
+          * @param bounds 2xM matrix for bounds of M-dimensional particles
+          * @param particles initial swarm used for optimization */
         Result minimize(const Matrix &bounds,
             Matrix &particles)
         {
