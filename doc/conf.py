@@ -12,7 +12,7 @@ def run_doxygen(folder):
         sys.stderr.write("doxygen execution failed: %s" % e)
 
 
-extensions = ['sphinx.ext.pngmath', 'sphinx.ext.todo', 'breathe']
+extensions = ['breathe']
 
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
